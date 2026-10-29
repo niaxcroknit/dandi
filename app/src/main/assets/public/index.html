@@ -1,0 +1,2435 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>단디</title>
+<meta name="description" content="원작실과 내 실의 차이로, 입고 싶은 사이즈를 뜨려면 도안의 어느 사이즈를 떠야 하는지 알려주는 뜨개 계산기">
+<meta name="theme-color" content="#F2F4F6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101013" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="단디">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>:root{color-scheme:light dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: one narrow, roomy column; wool-and-oat palette, a quiet berry accent for the one thing to press */
+/* Layout: Toss-style card stack on a pale gray ground; white cards without borders, one berry accent for actions */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --ink:#191F28; --muted:#6B7684; --line:#E5E8EB; --field:#F2F4F6;
+  --accent:#A44D62; --accent-soft:#F7E6EA; --scrim:rgba(0,0,0,.45);
+  --ok:#1E8A5A; --ok-soft:#E3F4EB; --warn:#B26A00; --warn-soft:#FFF2DC; --bad:#D2433A; --bad-soft:#FDE9E7;
+  --fb0:#A44D62; --fb1:#3DAA7A; --fb2:#F0A04B; --fb3:#7B6CD9; --fb4:#8B95A1;
+  --f-display:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:var(--f-body);
+  --r-card:24px; --r-ctl:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101013; --surface:#1D1D21; --ink:#EDEDF0; --muted:#9A9AA5; --line:#2E2E33; --field:#28282D;
+  --accent:#E79AAD; --accent-soft:#3E2930; --scrim:rgba(0,0,0,.6);
+  --ok:#5BD39A; --ok-soft:#173326; --warn:#F2B451; --warn-soft:#3A2C12; --bad:#FF8A80; --bad-soft:#3D1F1C;
+  --fb0:#E79AAD; --fb1:#5BD39A; --fb2:#F2B451; --fb3:#A99CF0; --fb4:#9A9AA5; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101013; --surface:#1D1D21; --ink:#EDEDF0; --muted:#9A9AA5; --line:#2E2E33; --field:#28282D;
+  --accent:#E79AAD; --accent-soft:#3E2930; --scrim:rgba(0,0,0,.6);
+  --ok:#5BD39A; --ok-soft:#173326; --warn:#F2B451; --warn-soft:#3A2C12; --bad:#FF8A80; --bad-soft:#3D1F1C;
+  --fb0:#E79AAD; --fb1:#5BD39A; --fb2:#F2B451; --fb3:#A99CF0; --fb4:#9A9AA5; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55;padding-inline:16px;padding-block:24px 64px}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font-family:var(--f-display);font-size:34px;margin:0;letter-spacing:-.5px}
+header p{margin:4px 0 0;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+section{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.pbar{align-items:center;text-align:center;gap:6px;background:var(--accent-soft);border:none;padding:20px 16px}
+.pbar .t{font-weight:600;font-size:16px}
+.pbar .s{font-size:14px;color:var(--muted);overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.pbtn{width:100%;margin-top:8px;padding:14px 16px;font-size:16px;border-radius:10px}
+h2{margin:0;font-size:16px;display:flex;align-items:baseline;gap:10px}
+h2 .n{font-family:var(--f-num);font-size:13px;color:var(--accent)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end}
+.grid .h{font-size:12px;color:var(--muted)}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+label{font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:4px;min-width:0}
+input,select{font:inherit;font-family:var(--f-num);font-size:15px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;min-width:0}
+input[type=text]{font-family:var(--f-body)}
+select{font-family:var(--f-body)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--surface);font-weight:600}
+.link{border:none;background:none;color:var(--accent);padding:0;font-size:13px;text-decoration:underline;text-underline-offset:2px}
+.x{border:none;background:none;color:var(--muted);padding:8px;font-size:18px;line-height:1}
+.add{align-self:flex-start;color:var(--accent);border-style:dashed}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.result{border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.result.ok{background:var(--ok-soft)} .result.warn{background:var(--warn-soft)} .result.bad{background:var(--bad-soft)} .result.me{background:var(--accent-soft)}
+.badge{font-size:12px;font-weight:600}
+.ok .badge{color:var(--ok)} .warn .badge{color:var(--warn)} .bad .badge{color:var(--bad)} .me .badge{color:var(--accent)}
+.big{font-family:var(--f-num);font-size:26px;font-variant-numeric:tabular-nums}
+.big small{font-family:var(--f-body);font-size:14px;color:var(--muted)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:none;border-radius:0;background:transparent;color:var(--muted);padding:8px 6px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.fitnote{border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;font-size:13px;background:var(--bg)}
+.fitnote.new{background:var(--warn-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border-radius:99px;padding:6px 14px;color:var(--muted)}
+.chips button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.bgroup{display:flex;flex-direction:column;gap:6px}
+.bgroup>span{font-size:13px;font-weight:600}
+.fitnote .actions{display:flex;flex-wrap:wrap;gap:8px}
+.parts{display:flex;flex-direction:column;gap:14px}
+.part{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:8px}
+.part:first-child{border-top:none;padding-top:0}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pname{font-weight:600}
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cgrid{display:grid;grid-template-columns:1.2fr 1fr 1fr .9fr auto;gap:8px;align-items:end}
+.why{font-size:12px;color:var(--muted)}
+.why .src{color:var(--accent)}
+.out{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;font-size:14px}
+.out .cnt{font-family:var(--f-num);font-size:20px;font-variant-numeric:tabular-nums}
+.pill{font-size:12px;padding:1px 8px;border-radius:99px;font-weight:600}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.bad{background:var(--bad-soft);color:var(--bad)}
+.diff{color:var(--muted);font-variant-numeric:tabular-nums}
+details>summary{cursor:pointer;color:var(--accent);font-size:14px}
+.check{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+footer{font-size:12px;color:var(--muted);text-align:center}
+
+dialog{border:none;border-radius:14px;padding:0;width:min(520px,calc(100% - 32px));max-height:min(86vh,720px);background:var(--surface);color:var(--ink)}
+dialog::backdrop{background:var(--scrim)}
+.dlg{display:flex;flex-direction:column;max-height:inherit}
+.dlg-head{padding:18px 18px 10px;display:flex;flex-direction:column;gap:12px;border-bottom:1px solid var(--line)}
+.dlg-head h2{font-size:17px}
+.dlg-body{padding:16px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.dlg-foot{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px}
+.preset{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.preset .top{display:flex;justify-content:space-between;align-items:center}
+.preset .top b{font-size:14px}
+.empty{font-size:13px;color:var(--muted);text-align:center;padding:14px;border:1px dashed var(--line);border-radius:10px}
+.addrow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+@media (max-width:440px){
+  .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cgrid{grid-template-columns:1fr 1fr}
+  .cgrid .cname{grid-column:1/-1}
+  .cgrid .x{justify-self:end}
+}
+.grid.g5{grid-template-columns:.8fr 1fr 1fr 1fr auto}
+.grid.g3{grid-template-columns:1fr 1.4fr auto}
+.answer{border-color:var(--accent);border-width:1.5px}
+.opt{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.opt.best{border-color:var(--ok);background:var(--ok-soft)}
+.otag{font-size:12px;font-weight:600;color:var(--muted)}
+.opt.best .otag{color:var(--ok)}
+.ohead{margin:0;font-size:17px;line-height:1.45}
+.stbl{width:100%;border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;margin-top:4px}
+.stbl th{font-size:12px;color:var(--muted);font-weight:500;text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.stbl td{padding:6px;border-bottom:1px solid var(--line)}
+.stbl tr.on td{font-weight:600}
+.stbl td:last-child{text-align:right}
+.rownote{padding:10px 12px;border-radius:10px;background:var(--bg)}
+.mwrap{overflow-x:auto;margin-inline:-4px;padding-inline:4px}
+.mtbl{border-collapse:separate;border-spacing:6px 6px;margin:-6px;font-size:14px}
+.mtbl th,.mtbl td{padding:0;vertical-align:middle}
+.mtbl thead th{min-width:72px;position:relative}
+.mtbl thead th input{text-align:center;font-weight:600;font-family:var(--f-body);padding-right:22px}
+.mtbl thead th .x.sm{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+.mtbl th.lab{text-align:left;font-weight:600;min-width:104px;font-size:14px;position:relative;padding-right:22px}
+.mtbl th.lab input{font-weight:600;margin-bottom:2px}
+.mtbl th.lab .x.sm{position:absolute;right:-4px;top:0}
+.mtbl td input{min-width:64px;text-align:center}
+.dir{display:block;font-size:11px;font-weight:400;color:var(--muted)}
+.stbl .dir{display:inline;margin-left:4px}
+.x.sm{font-size:15px;padding:4px}
+.addbar{display:flex;flex-wrap:wrap;gap:8px}
+.warnc{color:var(--warn);font-weight:600}
+.fitnote .stbl{background:var(--surface);border-radius:8px}
+.projbar{display:flex;flex-direction:column;gap:10px}
+.projbar .prow{display:flex;gap:8px;align-items:end}
+.projbar .prow label{flex:1}
+.projbar .pbtns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.projbar .pbtns button{padding:10px 8px}
+.pstate{font-size:12px;color:var(--muted)}
+.pstate.dirty{color:var(--warn);font-weight:600}
+.yhead{display:grid;grid-template-columns:1.3fr 1fr;gap:8px;align-items:end}
+.yhead.b3{grid-template-columns:.8fr 1.2fr 1fr}
+.copyrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* room for the bottom ad banner in the Android app */
+body{padding-bottom:calc(40px + var(--adh,0px))!important}
+.wiznav{bottom:var(--adh,0px)!important}
+.prembox{border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:14px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.prembox ul{flex-basis:100%;margin:6px 0 0;padding-left:18px}
+.pprice{font-weight:700;color:var(--accent)}
+.premcard{background:var(--surface);border:1.5px solid var(--line);border-radius:16px;padding:14px 16px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:12px}
+.premcard.on{border-color:var(--accent);background:var(--accent-soft)}
+.premcard .pc{flex:1;min-width:180px;display:flex;flex-direction:column;gap:2px}
+.premcard .pc b{font-size:15px}
+.info.combo{background:var(--accent-soft);gap:8px;padding:16px}
+.info.combo.bad{background:var(--warn-soft)}
+.info.combo>b{font-size:15px}
+.cbig{margin:0;font-size:17px}
+.clist{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.csafe{margin:4px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface);font-size:13px}
+.hlab{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:-4px}
+.hseg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.hseg button{font-size:14px;font-weight:600;padding:12px 10px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:6px}
+.hseg button::before{content:"";width:16px;height:16px;border-radius:50%;border:2px solid var(--muted);flex:none;box-sizing:border-box}
+.hseg button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.hseg button[aria-pressed="true"]::before{border:5px solid var(--accent)}
+.sharebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.shrow{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.shrow:last-child{border-bottom:none}
+.shrow input[type=checkbox]{width:20px;height:20px;flex:none;margin-top:2px;accent-color:var(--accent)}
+.shrow .shm{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.shrow .shn{font-weight:600;overflow-wrap:anywhere}
+.shrow .shs{font-size:12px;color:var(--muted)}
+.shrow .shs.new{color:var(--ok)} .shrow .shs.sim{color:var(--warn)}
+.shrow select{width:auto;font-size:13px;padding:4px 8px}
+.shgroup{font-size:12px;font-weight:700;color:var(--muted);margin-top:4px}
+ul.tips{margin:0;padding:10px 12px 10px 28px;display:flex;flex-direction:column;gap:2px}
+.recbody{max-width:260px}
+details.more>summary{font-weight:600}
+[hidden]{display:none!important}
+.opick{display:flex;flex-direction:row!important;align-items:center;gap:8px;cursor:pointer;font-size:14px}.opick input{width:18px;height:18px;accent-color:var(--accent)}
+.opick b{color:var(--ink)!important}.opick .diff{font-size:12px}
+.ycard.picked{border-color:var(--accent);border-width:1.5px}
+#sameSlot .sub{border-top:none;padding-top:0}
+details.hand>summary{font-weight:600}
+.card h3 .brand{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:2px}
+.yfoot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ystate{font-size:12px;color:var(--muted)}
+.sub{border-top:1px dashed var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.sub h3{margin:0;font-size:14px}
+.info{border-radius:10px;padding:12px;background:var(--bg);font-size:13px;display:flex;flex-direction:column;gap:4px}
+.plist{display:flex;flex-direction:column;gap:8px}
+.pitem{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.pitem.cur{border-color:var(--accent)}
+.pitem .pmain{flex:1;min-width:0;display:flex;flex-direction:column;text-align:left;border:none;background:none;padding:0;cursor:pointer;color:var(--ink)}
+.pitem .pmain b{font-size:15px;overflow-wrap:anywhere}
+.pitem .pmain span{font-size:12px;color:var(--muted)}
+.ycard{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.ycard .ytop{display:flex;justify-content:space-between;align-items:center}
+.ycard .ytop b{font-size:13px;color:var(--muted)}
+.dangerq{font-size:13px;color:var(--bad)}
+.yinfo summary{font-size:13px}
+.yinfo .yi{margin-top:10px}
+.nrange{display:flex;align-items:center;gap:4px}
+.fibs{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fib{display:grid;grid-template-columns:1fr 90px auto;gap:6px;align-items:center}
+.pct{display:flex;align-items:center;gap:4px;font-size:13px;color:var(--muted)}
+.metag{grid-column:1/-1;font-size:11px;color:var(--accent);margin-top:-4px}
+.chk{flex-direction:row;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
+.chk input{width:auto}
+.opt.guide{border-color:var(--accent);background:var(--accent-soft)}
+.opt.guide .otag{color:var(--accent)}
+
+/* ---------- responsive layout ---------- */
+.wrap{max-width:1160px}
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 28px}
+.brand{min-width:0;max-width:640px}
+.views{flex:0 0 auto;min-width:240px}
+.views button{padding:10px 16px;font-weight:600}
+.view{display:flex;flex-direction:column;gap:20px}
+.topbar{display:grid;gap:20px}
+.calc{display:grid;gap:20px}
+.colL,.colR{display:flex;flex-direction:column;gap:20px;min-width:0}
+@media (max-width:640px){.views{width:100%;min-width:0;order:-1}}
+@media (min-width:760px){.topbar{grid-template-columns:1fr 1fr;align-items:stretch}.pbar{justify-content:center}}
+@media (min-width:1024px){
+  .calc,.topbar{grid-template-columns:minmax(0,1fr) minmax(0,460px)}
+  .calc{align-items:start}
+  .colR{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);max-height:calc(100vh - 32px);overflow-y:auto;padding-bottom:4px}
+}
+/* ---------- library ---------- */
+.libhead{display:flex;flex-wrap:wrap;gap:10px 16px;justify-content:space-between;align-items:center}
+.libtools{display:flex;gap:8px;flex:1 1 280px;max-width:440px}
+.libtools input{flex:1;font-family:var(--f-body)}
+.libtools select{width:auto}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card.cur{border-color:var(--accent);border-width:1.5px}
+.card h3{margin:0;font-size:17px;line-height:1.35;overflow-wrap:anywhere;color:var(--ink)}
+.meta{display:flex;flex-wrap:wrap;gap:6px}
+.tagc{font-size:12px;padding:2px 9px;border-radius:99px;background:var(--bg);color:var(--muted);font-weight:500}
+.tagc.acc{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tagc.now{background:var(--ok-soft);color:var(--ok);font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font-size:14px}
+.kv dt{color:var(--muted);font-size:13px}
+.kv dd{margin:0;min-width:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.kv.body{grid-template-columns:repeat(auto-fill,minmax(90px,auto) minmax(60px,1fr))}
+.summ{margin:0;font-size:14px;padding:8px 10px;border-radius:8px;background:var(--bg)}
+.when{font-size:12px;color:var(--muted)}
+.cact{display:flex;gap:8px;margin-top:auto;padding-top:4px}
+.cact button{flex:1;padding:9px 8px;font-size:14px}
+button.danger{border-color:var(--bad);color:var(--bad);background:var(--bad-soft)}
+.fbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--line)}
+.fbar span{display:block;height:100%}
+.flegend{margin:0;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.flegend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px}
+.gchips{display:flex;flex-wrap:wrap;gap:6px}
+.gchip{font-family:var(--f-num);font-size:12px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-variant-numeric:tabular-nums}
+.gchip.me{border-color:var(--accent);color:var(--accent)}
+.empty.big{padding:36px 16px;font-size:14px;line-height:1.7}
+.fitwrap{display:grid;gap:14px}
+@media (min-width:900px){.fitwrap{grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start}}
+.fittbl{border-collapse:collapse;font-size:13px;min-width:460px;width:100%}
+.fittbl th,.fittbl td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.fittbl thead th{font-size:12px;color:var(--muted);font-weight:500}
+.fittbl tbody th{font-weight:600;white-space:nowrap}
+.fittbl td span{display:block;font-variant-numeric:tabular-nums}
+.fittbl td.nofit{color:var(--line)}
+
+/* ---------- fit & finish at small widths ---------- */
+body{word-break:keep-all;overflow-wrap:break-word}
+.stbl{font-size:14px}
+.stbl th{white-space:nowrap}
+.stbl td{white-space:normal}
+.stbl td:first-child{white-space:normal;min-width:4.5em}
+.stbl .dir{display:block;margin-left:0;font-size:11px}
+.stbl td:last-child,.stbl th:last-child{text-align:right}
+.pill{white-space:nowrap}
+.grid.g5{grid-template-columns:5.2em minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 2em}
+.grid.g5 select{padding:8px 4px 8px 8px}
+.grid.g5 .x{padding:8px 0}
+@media (max-width:480px){
+  .yhead{grid-template-columns:1fr}
+  .yhead.b3{grid-template-columns:minmax(0,1fr) minmax(0,1.4fr)}
+  .yhead.b3>label:last-child{grid-column:1/-1}
+  .stbl{font-size:13px}
+  .stbl th,.stbl td{padding:6px 4px}
+  .opt{padding:12px}
+  section{padding:16px 14px}
+  .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+.tscroll{overflow-x:auto;margin-inline:-2px;padding-inline:2px}
+input:not([type=checkbox]),select{height:42px}
+.yhead{align-items:end}
+.grid.g5,.grid.g3{align-items:center}
+
+/* ---------- recommendation & notes ---------- */
+.reco{border:1.5px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:8px;background:var(--surface)}
+.reco.ok{border-color:var(--ok);background:var(--ok-soft)}
+.reco.warn{border-color:var(--warn);background:var(--warn-soft)}
+.reco.bad{border-color:var(--bad);background:var(--bad-soft)}
+.reco .otag{font-size:12px;font-weight:700}
+.reco.ok .otag{color:var(--ok)} .reco.warn .otag{color:var(--warn)} .reco.bad .otag{color:var(--bad)}
+.rhead{margin:0;font-size:20px;line-height:1.45;text-wrap:balance}
+.rsum{margin:0;font-size:14px;font-weight:600}
+.reco .stbl{background:var(--surface);border-radius:8px}
+details.more{border-top:1px solid var(--line);padding-top:10px}
+details.more>summary{font-size:14px;padding:4px 0;color:var(--accent);font-weight:600}
+.morebody{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+.warnbox{background:var(--warn-soft);color:var(--ink)}
+.warnbox span{display:block}
+.measure{padding:8px 10px;border-radius:8px;background:var(--warn-soft);color:var(--ink)}
+.exbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:var(--warn-soft);font-size:14px}
+.cact{flex-wrap:wrap}
+.cact .primary{flex-basis:100%}
+
+/* ---------- wizard ---------- */
+.wrap{max-width:720px}
+.projbar{padding:12px 16px;gap:6px}
+.projbar .prow{display:flex;gap:8px;align-items:end}
+.projbar .pname{flex:1;min-width:0}
+.projbar #projSave{height:42px;padding:0 20px}
+.prow2{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;align-items:center}
+.plinks{display:flex;gap:14px}
+.stepper{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:8px}
+.stepper button{display:flex;flex-direction:column;align-items:center;gap:4px;border:none;background:none;padding:4px 2px;color:var(--muted);font-size:12px;min-width:0}
+.stepper button i{font-style:normal;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--line);background:var(--surface);font-family:var(--f-num);font-size:13px}
+.stepper button span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.stepper button.done i{border-color:var(--ok);color:var(--ok);background:var(--ok-soft)}
+.stepper button.cur{color:var(--ink);font-weight:600}
+.stepper button.cur i{border-color:var(--accent);background:var(--accent);color:var(--surface)}
+.wiz{display:flex;flex-direction:column;gap:16px}
+.step{gap:14px;padding:22px 18px}
+.step h2{font-family:var(--f-display);font-size:24px;line-height:1.35;text-wrap:balance}
+.qn{font-family:var(--f-num);font-size:12px;color:var(--accent)}
+.wiznav{display:flex;align-items:center;gap:12px;position:sticky;bottom:0;padding-block:12px calc(12px + env(safe-area-inset-bottom,0px));background:var(--bg);z-index:5}
+.wiznav button{padding:12px 18px;font-size:15px}
+.wiznav #wNext{margin-left:auto;min-width:130px}
+.wnote{font-size:13px;color:var(--muted);flex:1;text-align:center}
+.chips.big button{padding:10px 18px;font-size:15px}
+details.adv{border-top:1px solid var(--line);padding-top:12px}
+details.adv>summary{font-size:14px;font-weight:600;color:var(--accent);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+details.adv>summary .diff{font-weight:400;font-size:12px}
+.advbody{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+#fixBox h3{margin:0;font-size:14px}
+.step footer{text-align:left}
+.exbar{padding:10px 14px;flex-wrap:nowrap}
+.exbar .link{white-space:nowrap;font-weight:600}
+@media (max-width:640px){#handTag{display:none}.view{gap:14px}.wrap{gap:14px}.step{padding:20px 16px}.step h2{font-size:22px}}
+.rsteps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;line-height:1.55}
+.ztbl td{vertical-align:middle}
+.ztbl td:nth-child(2) .pill{margin-left:6px}
+.rhead.sm{font-size:17px}
+.cmp .stbl td:first-child{min-width:8em}
+.cmp .stbl td:last-child{text-align:left;font-size:12px}
+
+/* ================= roomy, warm mobile-first finish ================= */
+body{font-size:16px;line-height:1.65;padding-inline:18px;padding-block:20px 40px;font-variant-numeric:tabular-nums}
+.wrap{max-width:640px;gap:22px}
+.view,.wiz{gap:22px}
+section{border-radius:var(--r-card);padding:24px 20px;gap:18px;border-color:var(--line);box-shadow:0 1px 0 rgba(90,60,40,.04),0 8px 24px -18px rgba(90,60,40,.25)}
+label{font-size:14px;gap:6px;color:var(--muted)}
+input:not([type=checkbox]),select{height:52px;font-size:17px;padding:0 14px;border-radius:var(--r-ctl);background:var(--field);border:1.5px solid var(--line);font-family:var(--f-body)}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+button{border-radius:var(--r-ctl);padding:12px 16px;font-size:15px;border-width:1.5px}
+button.primary{box-shadow:0 6px 16px -10px var(--accent)}
+.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.hint{font-size:14.5px;line-height:1.65}
+.fields{gap:12px}
+.row2{gap:12px}
+.grid.g5{grid-template-columns:5.6em minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 2.2em;gap:10px}
+.grid.g3{gap:10px}
+.grid .h{font-size:13px}
+.seg{border-radius:var(--r-ctl);border-width:1.5px;padding:4px;gap:4px;background:var(--field)}
+.seg button{border-radius:10px;padding:12px 8px;font-size:15px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.chips{gap:8px}
+.chips button{border-radius:99px;padding:10px 18px;font-size:15px;background:var(--surface)}
+.chips.big{gap:10px}
+.chips.big button{padding:14px 22px;font-size:17px}
+.add{padding:12px 16px}
+.x{font-size:22px}
+.tag{font-size:13px;padding:4px 12px}
+
+/* top */
+header.top{gap:12px}
+.views{min-width:260px;background:var(--surface)}
+.views button{padding:13px 16px;font-size:16px}
+.exbar{border-radius:var(--r-card);padding:14px 18px;font-size:15px}
+.projbar{padding:18px 18px;gap:10px}
+.projbar #projSave{height:52px;padding:0 24px;font-size:16px}
+.prow2{font-size:14px}
+.plinks{gap:18px}
+.plinks .link{font-size:14px}
+
+/* stepper */
+.stepper{gap:4px;padding-block:12px}
+.stepper button{font-size:13px;gap:6px}
+.stepper button i{width:36px;height:36px;font-size:15px;border-width:2px}
+.stepper button.cur i{box-shadow:0 0 0 4px var(--accent-soft)}
+
+/* step cards */
+.step{padding:28px 22px 26px;gap:20px}
+.step h2{font-size:27px;line-height:1.35;margin-top:-4px}
+.qn{font-size:13px;letter-spacing:.06em;font-weight:600}
+details.adv{padding-top:16px}
+details.adv>summary{font-size:15px;padding:4px 0}
+.advbody{gap:18px;margin-top:16px}
+.ycard,.preset{border-radius:16px;padding:16px;gap:12px;background:var(--field)}
+.yfoot{gap:10px}
+.sub{gap:14px;padding-top:20px}
+.sub h3{font-size:16px}
+.info{border-radius:16px;padding:14px 16px;font-size:14.5px;gap:6px}
+.measure{border-radius:12px;padding:12px 14px}
+
+/* size table */
+.mtbl{border-spacing:8px 8px;margin:-8px}
+.mtbl td input{min-width:72px}
+.mtbl thead th{min-width:80px}
+.mtbl th.lab{font-size:15px;min-width:110px}
+
+/* wizard nav */
+.wiznav{gap:12px;padding-block:14px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.wiznav button{padding:15px 22px;font-size:16px;border-radius:16px}
+.wiznav #wNext{min-width:150px}
+.wnote{font-size:13.5px}
+
+/* results */
+#answer{gap:18px!important}
+.opt{border-radius:18px;padding:20px 18px;gap:10px;background:var(--surface)}
+.otag{font-size:13px;letter-spacing:.02em}
+.ohead{font-size:18px}
+.reco{border-radius:20px;padding:22px 20px;gap:12px;border-width:2px}
+.rhead{font-family:var(--f-display);font-size:25px;line-height:1.4}
+.rhead.sm{font-family:var(--f-body);font-size:19px;line-height:1.5;font-weight:500}
+.rsum{font-size:15.5px}
+.rsteps{gap:10px;font-size:15.5px;padding-left:22px;line-height:1.65}
+.stbl{font-size:15.5px}
+.stbl th{font-size:13px;padding:8px 8px}
+.stbl td{padding:12px 8px}
+.reco .stbl,.fitnote .stbl{border-radius:14px;overflow:hidden}
+.pill{font-size:13px;padding:3px 10px}
+.result{border-radius:16px;padding:18px}
+.big{font-size:28px;font-family:var(--f-body);font-weight:600}
+.warnbox{border-radius:16px}
+.cmp .stbl td:first-child{min-width:7em}
+
+/* library */
+.libhead{gap:12px}
+.libtools input{height:48px}
+.cards{gap:16px}
+.card{border-radius:var(--r-card);padding:20px;gap:12px}
+.card h3{font-size:19px}
+.cact button{padding:12px 10px;font-size:15px}
+.gchip{font-family:var(--f-body);font-size:13px;padding:4px 9px;border-radius:8px}
+
+/* dialogs */
+dialog{border-radius:24px;width:min(560px,calc(100% - 24px))}
+.dlg-head{padding:22px 22px 14px}
+.dlg-head h2{font-size:21px;font-family:var(--f-display)}
+.dlg-body{padding:20px 22px;gap:18px}
+.dlg-foot{padding:14px 22px calc(14px + env(safe-area-inset-bottom,0px))}
+.dlg-foot button{padding:13px 20px}
+
+@media (max-width:480px){
+  body{padding-inline:14px}
+  section{padding:22px 18px}
+  .step{padding:24px 18px 22px}
+  .step h2{font-size:25px}
+  .stbl{font-size:15px}
+  .stbl th,.stbl td{padding:10px 6px}
+  .opt{padding:18px 16px}
+  .reco{padding:20px 16px}
+  .rhead{font-size:23px}
+  .fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .grid.g5{grid-template-columns:5.2em minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 2em;gap:8px}
+  .grid.g5 input,.grid.g5 select{padding:0 10px}
+}
+@media (max-width:480px){.step.answer{padding-inline:12px}.step.answer>h2,.step.answer>.qn{padding-inline:6px}}
+.answer{border-color:var(--line);border-width:1px}
+
+/* ================= Toss-style cards ================= */
+body{background:var(--bg)}
+section,.card,.projbar,.step{border:none;box-shadow:none;border-radius:var(--r-card)}
+section{padding:24px 20px}
+.step{padding:28px 22px}
+.step h2,.rhead,.dlg-head h2{font-family:var(--f-body);font-weight:700;letter-spacing:-.02em}
+.step h2{font-size:24px;line-height:1.4}
+.qn{font-weight:700;color:var(--accent)}
+label{color:var(--muted);font-weight:500}
+input:not([type=checkbox]),select{border:none;background:var(--field);border-radius:12px;height:52px}
+input:focus,select:focus{box-shadow:0 0 0 2px var(--accent)}
+.seg{border:none;background:var(--field);padding:4px;border-radius:14px}
+.seg button{border:none}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.views{background:var(--field);border:none}
+.views button[aria-pressed="true"]{background:var(--surface);color:var(--ink)}
+.chips button{border:none;background:var(--field);color:var(--ink)}
+.chips button[aria-pressed="true"]{background:var(--accent);color:var(--surface)}
+.add{border:none;background:var(--field);color:var(--ink);font-weight:500}
+.ycard,.preset,.opt,.info,.fitnote,.result,.measure{border:none;background:var(--field);box-shadow:none}
+.opt{border-radius:18px}
+.opt.best,.opt.guide{background:var(--field)}
+.exbar{background:var(--warn-soft)}
+.reco{border:none;border-radius:20px;background:var(--field)}
+.reco.ok{background:var(--ok-soft)} .reco.warn{background:var(--warn-soft)} .reco.bad{background:var(--bad-soft)}
+.reco .otag,.opt .otag{font-size:13px;font-weight:700}
+.rhead{font-size:24px;line-height:1.4}
+.rhead.sm{font-size:19px;font-weight:600}
+.stbl{border-radius:14px;overflow:hidden}
+.reco .stbl,.fitnote .stbl,.opt .stbl{background:var(--surface)}
+.stbl th{border-bottom:1px solid var(--line);font-weight:500}
+.stbl td{border-bottom:1px solid var(--line)}
+.stbl tr:last-child td{border-bottom:none}
+.stbl tr.on td{font-weight:700}
+.pill{border-radius:8px}
+.tagc{background:var(--field)}
+.stepper{background:var(--bg)}
+.stepper button i{border:none;background:var(--surface);color:var(--muted)}
+.stepper button.done i{background:var(--ok-soft);color:var(--ok)}
+.stepper button.cur i{background:var(--accent);color:var(--surface);box-shadow:none}
+details.adv{border-top:1px solid var(--line)}
+details.more{border-top:none}
+.sub{border-top:1px solid var(--line)}
+.mtbl td input,.mtbl thead th input{background:var(--field)}
+.card.cur{box-shadow:0 0 0 2px var(--accent)}
+.gchip{border:none;background:var(--field)}
+.gchip.me{background:var(--accent-soft)}
+dialog{border-radius:24px}
+.dlg-head,.dlg-foot{border-color:var(--line)}
+.wiznav{background:linear-gradient(to top,var(--bg) 75%,transparent)}
+
+/* stepper: numbers, berry tint for done, yarn ball for "you are here" */
+.stepper button i{background:var(--surface);color:var(--muted);font-weight:700}
+.stepper button.done i{background:var(--accent-soft);color:var(--accent)}
+.stepper button.done span{color:var(--ink)}
+.stepper button.cur i{background:var(--accent);color:#fff;box-shadow:0 0 0 4px var(--accent-soft)}
+.stepper button.cur i svg{display:block}
+
+/* original yarn: same white card, set apart by a divider and a bold title; gray card with white fields so the boxes show */
+.sub{border-top:1px solid var(--line);background:none;border-radius:0;padding:22px 0 0;margin-top:6px}
+.sub h3{font-size:19px;font-weight:700;color:var(--ink)}
+.sub .ycard{background:var(--field);padding:18px 16px}
+.sub .ycard .ytop b{font-size:15px;color:var(--ink)}
+.sub .ycard input:not([type=checkbox]),.sub .ycard select{background:var(--surface)}
+.sub .add{background:var(--field);color:var(--ink);font-weight:600}
+.sub .info{background:var(--field)}
+
+@media (max-width:480px){
+  .sub{padding:20px 0 0;margin-inline:0}
+  .sub .ycard{padding:14px 10px}
+  .ycard .grid.g5,.sub .grid.g5{grid-template-columns:4.4em minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) 1.6em;gap:6px}
+  .ycard .grid.g5 input,.ycard .grid.g5 select{padding:0 8px;font-size:16px}
+  .ycard .grid.g5 .x{font-size:18px}
+}
+.ycard input:not([type=checkbox]),.ycard select,.preset input{background:var(--surface)}
+
+/* backup + disclaimer */
+#libBackup{margin-top:8px}
+.bkcard{background:var(--surface);border-radius:var(--r-card);padding:22px 20px;display:flex;flex-direction:column;gap:14px}
+.bkhead{display:flex;flex-direction:column;gap:4px}
+.bkhead h3{margin:0;font-size:19px;font-weight:700}
+.bkbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bkbtns button{padding:14px 10px;font-size:15px}
+.bkmore{display:flex;gap:18px}
+.bkmore .link{font-size:14px;color:var(--muted)}
+#bkText{width:100%;min-height:110px;border:none;border-radius:12px;background:var(--field);color:var(--ink);font:13px/1.5 ui-monospace,Menlo,monospace;padding:12px;resize:vertical}
+#bkPreview{display:flex;flex-direction:column;gap:6px}
+.disclaim{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border-radius:18px;background:var(--field);font-size:14.5px;line-height:1.65;color:var(--muted)}
+.disclaim b{color:var(--ink);font-size:15px}
+
+/* folds: a tinted bar with a chevron so it's clear they open */
+details.adv{border:1.5px solid var(--line)!important;border-radius:16px;padding:0!important;background:var(--surface);overflow:hidden;margin-top:4px}
+details.adv>summary{list-style:none;position:relative;padding:15px 46px 15px 16px!important;background:var(--accent-soft);color:var(--ink)!important;font-size:15.5px!important;font-weight:700;display:flex;flex-wrap:wrap;gap:2px 10px;align-items:baseline}
+details.adv>summary::-webkit-details-marker{display:none}
+details.adv>summary::after{content:"";position:absolute;right:20px;top:50%;width:9px;height:9px;border-right:2.5px solid var(--accent);border-bottom:2.5px solid var(--accent);transform:translateY(-75%) rotate(45deg);transition:transform .2s}
+details.adv[open]>summary::after{transform:translateY(-25%) rotate(-135deg)}
+details.adv>summary .diff{font-weight:500;font-size:12.5px;color:var(--muted)}
+details.adv>.advbody{padding:0 16px 18px;margin-top:16px!important}
+details.adv[open]>summary{border-bottom:1px solid var(--line)}
+.morehead{margin:10px 0 0;font-size:16px}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <span class="tag" id="handTag">평손 기준 · 메리야스뜨기</span>
+    <nav class="seg views" aria-label="화면">
+      <button type="button" id="navCalc" aria-pressed="true">계산하기</button>
+      <button type="button" id="navLib" aria-pressed="false">내 보관함</button>
+    </nav>
+  </header>
+
+  <div id="calcView" class="view">
+  <div class="exbar" id="exBar" hidden><span>지금 보는 건 <b>예시</b>예요.</span><button type="button" class="link" id="exClear">비우고 시작하기</button></div>
+  <section class="projbar" aria-label="프로젝트">
+    <div class="prow">
+      <label class="pname">프로젝트<input id="projName" type="text" placeholder="이름 (예: 봄 가디건)"></label>
+      <button type="button" class="primary" id="projSave">저장</button>
+    </div>
+    <div class="prow2"><span class="pstate" id="projState"></span>
+      <span class="plinks"><button type="button" class="link" id="projOpen">불러오기</button><button type="button" class="link" id="projNew">새 프로젝트</button></span></div>
+  </section>
+
+  <nav class="stepper" id="stepper" aria-label="단계"></nav>
+
+  <div class="wiz">
+  <section class="step" data-step="1" aria-labelledby="q1">
+    <span class="qn">1 / 5</span>
+    <h2 id="q1">어떤 실로 뜰 거예요?</h2>
+    <div class="seg" role="group" aria-label="실 구성">
+      <button type="button" id="ymOrig" aria-pressed="false">원작실 그대로</button>
+      <button type="button" id="ymSingle" aria-pressed="true">다른 실</button>
+      <button type="button" id="ymCombo" aria-pressed="false">다른 실 합사</button>
+    </div>
+    <p class="hint" id="myHint"></p>
+    <div id="sameSlot"></div>
+    <div id="partList" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button class="add" id="addPart" type="button" hidden>+ 합사할 실 추가</button>
+    <div class="info combo" id="comboCard" hidden></div>
+    <div id="myYarn" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="info" id="yarnNotes" hidden></div>
+    <details class="adv hand" id="handBox">
+      <summary><span id="handSum">내 손땀: 평손</span> <span class="diff">평손 · 쫀손 · 널손 · 내 기록</span></summary>
+      <div class="advbody">
+        <div class="chips" id="handSeg" role="group" aria-label="내 손땀"></div><p class="hint" id="handHint"></p>
+        <div class="sub" id="measureSub" hidden>
+          <h3>뜨다가 재기</h3>
+          <p class="hint">뜨던 편물에서 코와 단을 재서 넣으면 <b>이 프로젝트는 그 값으로</b> 계산해요. "내 실에 기록"을 누르면 다음 계산에도 내 손땀으로 쌓여요.</p>
+
+        <div class="row2">
+          <label>지금 바늘<select id="needle"></select></label>
+          <label>합 수<select id="strand"></select></label>
+        </div>
+        <div id="gaugeOut" class="result"></div>
+        <div id="fixBox" class="check">
+          
+          <p class="hint">뜬 편물에 자를 대고 <b>정한 길이 안에 든 코와 단</b>을 세어 넣어주세요. 원통이든 평면이든 상관없어요.</p>
+          <ul class="hint measure tips">
+            <li>고무단은 오므라들어서 피하고 <b>메리야스 부분</b>에서 세요.</li>
+            <li><b>가장자리 3~4코는 빼고</b> 가운데에서 세요.</li>
+            <li>세탁하고 말린 뒤에 재면 완성 크기와 더 비슷해요.</li>
+          </ul>
+          <div class="row2">
+            <label>잰 길이<select id="mLen"><option value="5">5cm</option><option value="10">10cm</option><option value="c">직접 입력</option></select></label>
+            <label id="mLenCL" hidden>길이(cm)<input id="mLenC" type="number" inputmode="decimal" step="0.5" placeholder="예: 7"></label>
+          </div>
+          <div class="seg" role="group" aria-label="측정 방법" hidden>
+            <button type="button" id="mSwatch" aria-pressed="true">스와치로 쟀어요</button>
+            <button type="button" id="mPiece" aria-pressed="false">뜨던 편물로 잴게요</button>
+          </div>
+          <div id="swatchIn" class="row2">
+            <label><span class="mlab">5cm 안의 코</span><input id="myS" type="number" inputmode="decimal" step="0.5" placeholder="예: 11"></label>
+            <label><span class="mlab">5cm 안의 단</span><input id="myR" type="number" inputmode="decimal" step="0.5" placeholder="비워도 돼요"></label>
+          </div>
+          <div id="spot2" class="row2" hidden>
+            <label><span class="mlab">두 번째 곳 · 코</span><input id="myS2" type="number" inputmode="decimal" step="0.5"></label>
+            <label><span class="mlab">두 번째 곳 · 단</span><input id="myR2" type="number" inputmode="decimal" step="0.5"></label>
+          </div>
+          <button type="button" class="link" id="addSpot">+ 한 군데 더 재기 (평균을 내요)</button>
+          <p class="hint" id="mConv" role="status"></p>
+          <div id="pieceIn" hidden>
+            <p class="hint measure">고무단 말고 <b>메리야스 부분</b>의 폭을 재세요. 고무단은 오므라들어서 게이지가 틀려요. 탑다운이면 요크 말고 몸판이 갈라진 뒤에 재요.</p>
+            <label class="chk"><input type="checkbox" id="pcRound"> 원통으로 떴어요 (납작하게 놓고 잰 폭 × 2로 계산)</label>
+            <div class="row2">
+              <label>메리야스 부분 코 수<input id="pcS" type="number" inputmode="numeric" placeholder="예: 180"></label>
+              <label>편물 폭(cm)<input id="pcW" type="number" inputmode="decimal" step="0.5" placeholder="예: 95"></label>
+              <label>뜬 단 수<input id="pcR" type="number" inputmode="numeric" placeholder="비워도 돼요"></label>
+              <label>뜬 길이(cm)<input id="pcL" type="number" inputmode="decimal" step="0.5" placeholder="비워도 돼요"></label>
+            </div>
+          </div>
+          <div class="yfoot"><button type="button" id="clearMe">추정값으로 되돌리기</button><button type="button" id="keepMe" hidden>이 게이지를 내 실에 기록</button><span class="ystate" id="keepMeState"></span></div>
+        </div>
+              </div>
+      </div>
+    </details>
+    <details class="adv" id="advCount">
+      <summary>코 수·단 수 계산 <span class="diff">도안 숫자 바꾸기 · cm ↔ 코·단</span></summary>
+      <div class="advbody">
+        <p class="hint" id="cntBase"></p>
+        <div class="chips" role="group" aria-label="계산 종류" id="cntSeg"></div>
+        <div class="row2">
+          <label><span id="cntLa"></span><input id="cntA" type="number" inputmode="decimal" step="1"></label>
+          <label><span id="cntLb"></span><input id="cntB" type="number" inputmode="decimal" step="1"></label>
+        </div>
+        <div class="result" id="cntOut"></div>
+      </div>
+    </details>
+  </section>
+
+  <section class="step" data-step="2" aria-labelledby="q2" hidden>
+    <span class="qn">2 / 5</span>
+    <h2 id="q2">어떤 도안이에요?</h2>
+    <div class="chips" role="group" aria-label="옷 종류" id="garmentSeg"></div>
+    <p class="hint">도안에 적힌 게이지를 넣어주세요. 모르면 비워두고 아래 원작실을 넣어도 돼요.</p>
+    <div class="fields">
+      <label>10cm당 코<input id="patS" type="number" inputmode="decimal" step="0.5" placeholder="예: 22"></label>
+      <label>10cm당 단<input id="patR" type="number" inputmode="decimal" step="0.5" placeholder="비워도 돼요"></label>
+      <label>도안 바늘(mm)<input id="patN" type="number" inputmode="decimal" step="0.5" placeholder="비워도 돼요"></label>
+    </div>
+    <p class="hint" id="patSrc"></p>
+    <div id="origSlot">
+        <div class="sub" id="origSub">
+          <h3 id="origH">원작실</h3>
+          <p class="hint">도안에서 쓴 실이에요. 도안 게이지를 모르면 <b>원작실 판매처 게이지만 넣어도 계산돼요.</b> 둘 다 넣으면 비교도 해드려요.</p>
+          <div class="seg" role="group" aria-label="원작실이 여러 개일 때">
+            <button type="button" id="omEach" aria-pressed="true">이 중 하나로 떠요</button>
+            <button type="button" id="omTogether" aria-pressed="false">함께 잡고 떠요 (합사)</button>
+          </div>
+          <div id="origList" style="display:flex;flex-direction:column;gap:12px"></div>
+          <button class="add" id="addOrig" type="button">+ 원작실 추가</button>
+          <div class="info" id="origInfo" hidden></div>
+        </div>
+    </div>
+    <p class="hint" id="origMoved" hidden>원작실은 1단계에서 넣었어요. <button type="button" class="link" id="origGo1">1단계에서 보기</button></p>
+    <details class="adv" id="advPat">
+      <summary>더 알려주기 <span class="diff">세탁 기준 · 인치</span></summary>
+      <div class="advbody">
+        <div class="fields">
+          <label>게이지 기준<select id="patWash"><option value="unknown">적혀 있지 않음</option><option value="after">세탁 후</option><option value="before">세탁 전</option></select></label>
+          <label>도안 단위<select id="patUnit"><option value="cm">cm · 10cm당</option><option value="in">인치 · 4인치당</option></select></label>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section class="step" data-step="3" aria-labelledby="q3" hidden>
+    <span class="qn">3 / 5</span>
+    <h2 id="q3">도안 사이즈표를 옮겨주세요</h2>
+    <p class="hint">도안에 있는 사이즈별 실측을 그대로 적으면 돼요. 진동둘레나 목둘레처럼 없는 항목은 추가할 수 있어요.</p>
+    <div class="mwrap" id="sizeRows"></div>
+    <div class="addbar"><button class="add" id="addS" type="button">+ 사이즈</button><button class="add" id="addCs" type="button">+ 가로 항목</button><button class="add" id="addCr" type="button">+ 세로 항목</button></div>
+  </section>
+
+  <section class="step" data-step="4" aria-labelledby="q4" hidden>
+    <span class="qn">4 / 5</span>
+    <h2 id="q4">어떤 사이즈를 입고 싶어요?</h2>
+    <div class="chips big" role="group" aria-label="입고 싶은 사이즈" id="wantSeg"></div>
+    <details class="adv" id="advFit">
+      <summary>내 치수로 추천받기 <span class="diff" id="profSum"></span></summary>
+      <div class="advbody">
+        <div class="seg" role="group" aria-label="핏" id="fitSeg"></div>
+        <label class="recbody"><span id="recBodyL">내 가슴둘레(cm)</span><input id="recBody" type="number" inputmode="decimal" step="0.5" placeholder="예: 88"></label>
+        <div class="fitnote" id="recNote"></div>
+        <button type="button" id="openProf">내 치수 입력하기</button>
+      </div>
+    </details>
+  </section>
+
+  <section class="step answer" data-step="5" aria-labelledby="q5" hidden>
+    <span class="qn">5 / 5</span>
+    <h2 id="q5">이렇게 뜨세요</h2>
+    <div id="answer" style="display:flex;flex-direction:column;gap:12px"></div>
+    <footer>추정값은 판매처 게이지를 바늘 굵기에 따라 이어서 계산한 값이에요. 조금 떠서 코와 단을 세어 넣으면 가장 정확해요.</footer>
+  </section>
+
+  <div class="wiznav">
+    <button type="button" id="wPrev">← 이전</button>
+    <span class="wnote" id="wNote"></span>
+    <button type="button" class="primary" id="wNext">다음 →</button>
+  </div>
+  </div>
+  </div>
+
+  <div id="libView" class="view" hidden>
+    <div class="libhead">
+      <div class="chips" id="libTabs" role="group" aria-label="보관함 종류"></div>
+      <div class="libtools">
+        <input id="libSearch" type="search" placeholder="이름으로 찾기" aria-label="이름으로 찾기">
+        <select id="libSort" aria-label="정렬"><option value="recent">최근 순</option><option value="name">이름 순</option></select>
+      </div>
+    </div>
+    <div id="premCard" hidden></div>
+    <p class="hint" id="libStore"></p>
+    <div id="libBody"></div>
+    <div id="libBackup"></div>
+  </div>
+</div>
+
+
+
+<dialog id="yarnDlg" aria-labelledby="yarnDlgT">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="yarnDlgT">실 편집</h2></div>
+    <div class="dlg-body"><p class="hint" id="eNote"></p><div id="eYarn" style="display:flex;flex-direction:column;gap:10px"></div></div>
+    <div class="dlg-foot"><span class="hint" id="eMsg" style="margin-right:auto;align-self:center"></span><button type="button" id="eCancel">취소</button><button type="button" class="primary" id="eSave">저장</button></div>
+  </div>
+</dialog>
+
+<dialog id="premDlg" aria-labelledby="pmT">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="pmT">프로젝트를 더 저장하려면</h2></div>
+    <div class="dlg-body">
+      <p style="margin:0">무료 버전은 프로젝트를 <b>10개까지</b> 저장할 수 있어요. 이미 저장한 프로젝트는 그대로 남아 있어요.</p>
+      <div class="prembox">
+        <b>단디 프리미엄</b> <span class="pprice" id="pmPrice">₩1,000</span>
+        <ul><li>프로젝트 무제한 저장</li><li>광고 없음</li><li>한 번만 결제하면 끝, 다시 설치해도 같은 구글 계정이면 자동으로 되살아나요</li></ul>
+      </div>
+      <p class="hint" style="margin:0">안 쓰는 프로젝트를 지워도 다시 저장할 수 있어요.</p>
+    </div>
+    <div class="dlg-foot"><span class="hint" id="pmMsg" role="status" style="margin-right:auto;align-self:center"></span><button type="button" id="pmLater">나중에</button><button type="button" class="primary" id="pmBuy">프리미엄 사기</button></div>
+  </div>
+</dialog>
+
+<dialog id="shareDlg" aria-labelledby="shT">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="shT">실 보내기</h2><p class="hint" id="shSub" style="margin:0"></p></div>
+    <div class="dlg-body" id="shBody"></div>
+    <div class="dlg-foot"><span class="hint" id="shMsg" role="status" style="margin-right:auto;align-self:center"></span><button type="button" id="shCancel">닫기</button><button type="button" class="primary" id="shGo">보내기</button></div>
+  </div>
+</dialog>
+
+<dialog id="profDlg" aria-labelledby="dlgTitle">
+  <form class="dlg" method="dialog" id="profForm">
+    <div class="dlg-head">
+      <h2 id="dlgTitle">내 치수와 핏</h2>
+      <div class="seg" role="group" aria-label="보기">
+        <button type="button" id="tabBody" aria-pressed="true">몸 치수</button>
+        <button type="button" id="tabFit" aria-pressed="false">저장된 핏</button>
+      </div>
+    </div>
+    <div class="dlg-body" id="paneBody">
+      <p class="hint">가슴둘레만 있어도 시작할 수 있어요. 나머지는 그 옷을 뜰 때 채우면 돼요.</p>
+      <div id="bodyFields" style="display:flex;flex-direction:column;gap:14px"></div>
+    </div>
+    <div class="dlg-body" id="paneFit" hidden>
+      <p class="hint">핏은 한꺼번에 넣지 않아도 돼요. 입고 싶은 사이즈를 고르는 단계에서 핏으로 저장하면 그 사이즈의 치수가 통째로 저장돼요. 둘레와 너비는 몸 치수에 더하는 여유로, 길이는 완성 cm로 저장해요.</p>
+      <div id="presetList" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div class="addrow">
+        <label>옷<select id="newG"></select></label>
+        <label>핏<select id="newF"></select></label>
+        <button type="button" id="addPreset">추가</button>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <span class="hint" id="dlgMsg" style="margin-right:auto;align-self:center"></span>
+      <button type="button" id="cancelProf">취소</button>
+      <button type="button" class="primary" id="saveProf">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const fmt=(v,d=1)=>(Math.round(v*10**d)/10**d).toString();
+const sgn=v=>(v>0?"+":v<0?"−":"±")+fmt(Math.abs(v));
+const num=v=>(v===""||v===null||v===undefined||isNaN(+v))?null:+v;
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const filled=v=>v!==null&&v!==undefined&&v!=="";
+const mmTxt=v=>(v*4%2?v.toFixed(2):v.toFixed(1))+"mm";
+const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const when=t=>{if(!t)return"";const d=new Date(t);return`${d.getMonth()+1}월 ${d.getDate()}일 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`};
+
+/* ---------- constants ---------- */
+const BODY_GROUPS=[
+  ["기본",[["height","키"],["chest","가슴둘레"]]],
+  ["상의",[["shoulder","어깨너비"],["arm","팔 길이"]]],
+  ["하의",[["waist","허리둘레"],["hip","엉덩이둘레"]]],
+  ["발·머리",[["footLen","발 길이"],["footCirc","발둘레"],["head","머리둘레"]]],
+];
+const BODY_NAME=Object.fromEntries(BODY_GROUPS.flatMap(g=>g[1]));
+const TOP_HINT={slim:"상의는 보통 가슴 여유 0~5cm",regular:"상의는 보통 가슴 여유 5~10cm",over:"상의는 보통 가슴 여유 15cm 이상"};
+const GARMENTS=[
+  {id:"cardigan",name:"가디건",main:"chest",hint:TOP_HINT},
+  {id:"sweater",name:"스웨터",main:"chest",hint:TOP_HINT},
+  {id:"vest",name:"조끼",main:"chest",hint:TOP_HINT},
+  {id:"dress",name:"원피스",main:"chest",hint:TOP_HINT},
+  {id:"skirt",name:"치마",main:"hip",hint:{slim:"엉덩이는 보통 여유 0~3cm",regular:"엉덩이는 보통 여유 3~8cm",over:"엉덩이는 보통 여유 10cm 이상"}},
+  {id:"socks",name:"양말",main:"footCirc",hint:{slim:"양말은 보통 발둘레보다 10% 정도 작게",regular:"양말은 보통 발둘레보다 10% 정도 작게",over:"여유 있는 양말은 발둘레보다 5% 정도 작게"}},
+  {id:"hat",name:"모자",main:"head",hint:{slim:"모자는 보통 머리둘레보다 10% 정도 작게",regular:"모자는 보통 머리둘레보다 5~10% 작게",over:"슬라우치 모자는 머리둘레와 비슷하게"}},
+];
+const FITS=[["slim","슬림핏"],["regular","레귤러핏"],["over","오버핏"]];
+const garment=id=>GARMENTS.find(g=>g.id===id)||GARMENTS[0];
+const fName=f=>FITS.find(x=>x[0]===f)[1];
+const COLS={chest:["가슴둘레","s"],length:["총장","r"],shoulder:["어깨너비","s"],sleeve:["소매 길이","r"],
+  hip:["엉덩이둘레","s"],waist:["허리둘레","s"],skirtLen:["치마 길이","r"],
+  footCirc:["발둘레","s"],footLen:["발 길이","r"],leg:["발목 위 길이","r"],head:["머리둘레","s"],depth:["모자 깊이","r"]};
+const GCOLS={cardigan:["chest","length","shoulder","sleeve"],sweater:["chest","length","shoulder","sleeve"],vest:["chest","length","shoulder"],
+  dress:["chest","hip","length","shoulder","sleeve"],skirt:["waist","hip","skirtLen"],socks:["footCirc","footLen","leg"],hat:["head","depth"]};
+const FIT_BASE={chest:"chest",shoulder:"shoulder",hip:"hip",waist:"waist",footCirc:"footCirc",footLen:"footLen",head:"head"};
+const fitLabel=k=>COLS[k][0]+(FIT_BASE[k]?" 여유":"");
+const colDef=k=>({key:k,name:COLS[k][0],dir:COLS[k][1]});
+
+/* ---------- yarn shape ---------- */
+function fixY(y){y=y||{};const o={brand:y.brand||"",name:y.name||"",gauges:(y.gauges||[]).map(g=>{const q={k:g.k||1,n:g.n??null,s:g.s??null,r:g.r??null};if(g.me)q.me=true;return q}),
+  weight:y.weight??null,length:y.length??null,needleMin:y.needleMin??null,needleMax:y.needleMax??null,fibers:(y.fibers||[]).map(f=>({f:f.f||"울",p:f.p??null}))};
+  if(y.hairy===true||y.hairy===false)o.hairy=y.hairy;
+  if(y.parts||y.mode==="combo"){o.mode=y.mode||"combo";o.parts=(y.parts||[]).map(fixY)}else o.mode=y.mode||"single";
+  if(o.mode==="combo")while(o.parts.length<2)o.parts.push(fixY({gauges:[{k:1}]}));
+  return o}
+
+/* ---------- local storage ---------- */
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+/* ---------- profile (shared across projects) ---------- */
+function normalizeProfile(p){
+  p=p&&typeof p==="object"?clone(p):{};
+  p.body=p.body||{};p.fits=p.fits||{};
+  if(p.prefs){Object.entries(p.prefs).forEach(([g,v])=>{if(v&&v.ease!=null&&!p.fits[g+"_regular"])p.fits[g+"_regular"]={ease:v.ease}});delete p.prefs}
+  Object.entries(p.fits).forEach(([k,v])=>{
+    const G=GARMENTS.find(g=>g.id===k.split("_")[0]);
+    if(!G||!v){delete p.fits[k];return}
+    const out={};
+    if(v.ease!=null&&v[G.main]==null)out[G.main]=v.ease;
+    Object.keys(COLS).forEach(c=>{if(v[c]!=null)out[c]=v[c]});
+    if(Object.keys(out).length)p.fits[k]=out;else delete p.fits[k];
+  });
+  return p;
+}
+let profile=normalizeProfile(lsGet("hankocha-profile"));
+const fitTarget=(fit,k)=>{if(!fit||fit[k]==null)return null;const b=FIT_BASE[k];if(!b)return fit[k];const bv=profile.body[b];return bv>0?bv+fit[k]:null};
+
+/* ---------- libraries: yarns and projects ---------- */
+let yarnLib=lsGet("hankocha-yarns")||[];
+let projLib=lsGet("hankocha-projects")||[];
+
+/* ---------- current project ---------- */
+function blankProject(){return{id:newId(),name:"",
+  myYarn:fixY({gauges:[{k:1},{k:1}]}),
+  origYarns:[{name:"",gauges:[{k:1,n:null,s:null,r:null}]}],origMode:"each",
+  needle:4,strand:1,mode:"swatch",me:{s:"",r:"",pcS:"",pcW:"",pcR:"",pcL:""},
+  garment:"cardigan",fit:"regular",
+  pattern:{s:null,r:null,n:null,cols:GCOLS.cardigan.map(colDef),sizes:[{name:"S",m:{}},{name:"M",m:{}},{name:"L",m:{}}]},want:"M"}}
+function exampleProject(){const p=blankProject();Object.assign(p,{name:"예시 · 가디건",
+  myYarn:{name:"예시 실 (내 실)",gauges:[{k:1,n:4,s:20,r:26},{k:1,n:5,s:17,r:23}]},
+  origYarns:[{name:"예시 원작실",gauges:[{k:1,n:3.5,s:24,r:32},{k:1,n:4.5,s:21,r:28}]}],
+  example:true,pattern:{s:22,r:28,n:4,cols:GCOLS.cardigan.map(colDef),sizes:[
+    {name:"S",m:{chest:90,length:52,shoulder:36,sleeve:53}},{name:"M",m:{chest:100,length:54,shoulder:38,sleeve:55}},
+    {name:"L",m:{chest:110,length:56,shoulder:40,sleeve:57}},{name:"XL",m:{chest:120,length:58,shoulder:42,sleeve:58}}]}});return normalizeProject(p)}
+function normalizeProject(p){
+  const b=blankProject();p=Object.assign(b,p||{});
+  if(p.mode==="piece"&&p.me){const S=+p.me.pcS,W=+p.me.pcW,R=+p.me.pcR,L=+p.me.pcL;
+    if(S>0&&W>0&&!(+p.me.s>0))p.me.s=String(Math.round(S/(W*(p.me.round?2:1))*100)/10);
+    if(R>0&&L>0&&!(+p.me.r>0))p.me.r=String(Math.round(R/L*100)/10)}
+  p.mode="swatch";
+  if(p.gauges&&!p.myYarn.gauges.some(g=>g.s)){p.myYarn={name:"",gauges:p.gauges};}
+  delete p.gauges;
+  if(p.origYarn){if(p.origYarn.name||(p.origYarn.gauges||[]).some(g=>g.s))p.origYarns=[p.origYarn];delete p.origYarn}
+
+  p.myYarn=fixY(p.myYarn);p.origYarns=(p.origYarns||[]).map(fixY);if(!p.origYarns.length)p.origYarns=[fixY()];
+  if(p.origMode!=="together")p.origMode="each";
+  p.origPick=Math.max(0,Math.min(p.origYarns.length-1,+p.origPick||0));
+  if(!p.pattern.cols)p.pattern.cols=GCOLS[p.garment||"cardigan"].map(colDef);
+  p.pattern.sizes=(p.pattern.sizes||[]).map(z=>({name:z.name,m:z.m||(z.w!=null?{[garment(p.garment).main]:z.w}:{})}));
+  if(!GARMENTS.some(g=>g.id===p.garment))p.garment="cardigan";
+  const hadMe=p.me&&filled(p.me.s);
+  p.me=Object.assign(b.me,p.me||{});
+  if(!num(p.me.len))p.me.len=hadMe?"10":"5";
+  p.cnt=Object.assign({m:"pat",pat:{a:"",b:""},cm:{a:"",b:""},st:{a:"",b:""}},p.cnt||{});
+  return p;
+}
+let st=lsGet("hankocha-current");
+if(!st){const v4=lsGet("hankocha-project-v4");st=v4?normalizeProject(v4):exampleProject()}else st=normalizeProject(st);
+let savedJSON=lsGet("hankocha-current-saved");
+const projJSON=()=>{const p=clone(st);delete p.updatedAt;delete p.summary;return JSON.stringify(p)};
+const isDirty=()=>savedJSON!==projJSON();
+let autoTimer=null;
+const saveDraft=()=>{lsSet("hankocha-current",st);renderProjState();
+  /* a project that was saved once keeps saving itself */
+  if(typeof projLib!=="undefined"&&projLib.some(p=>p.id===st.id)&&isDirty()){clearTimeout(autoTimer);autoTimer=setTimeout(()=>{if(isDirty())saveProject(true)},1500)}};
+
+/* ---------- account store ---------- */
+let profRef=null,yarnCol=null,projCol=null,writeChain=Promise.resolve(),storeLabel="이 기기에 저장돼요";
+const queue=fn=>(writeChain=writeChain.then(fn).then(()=>"account").catch(()=>"local"));
+function commitProfile(){lsSet("hankocha-profile",profile);return profRef?queue(()=>profRef.set(clone(profile))):Promise.resolve("local")}
+function putYarn(y){lsSet("hankocha-yarns",yarnLib);return yarnCol?queue(()=>yarnCol.doc(y.id).set(clone(y))):Promise.resolve("local")}
+function putProject(p){lsSet("hankocha-projects",projLib);return projCol?queue(()=>projCol.doc(p.id).set(clone(p))):Promise.resolve("local")}
+function dropProject(id){lsSet("hankocha-projects",projLib);return projCol?queue(()=>projCol.doc(id).delete()):Promise.resolve("local")}
+const hasProfileData=p=>Object.values(p.body).some(filled)||Object.keys(p.fits).length>0;
+
+async function connectStore(){
+  const c=window.claude;if(!c||!c.use)return;
+  try{
+    const [db,user]=await Promise.all([c.use("db"),c.use("user")]);
+    if(!db||!user)return;
+    const uid=await user.id();if(!uid)return;
+    profRef=db.doc("data/users/"+uid+"/profile");
+    yarnCol=profRef.collection("yarns");projCol=profRef.collection("projects");
+    storeLabel="내 계정에 저장돼요";
+    let f1=true,f2=true,f3=true;
+    profRef.onSnapshot(snap=>{
+      if(snap.metadata.hasPendingWrites)return;
+      if(snap.exists){const d=normalizeProfile(snap.data());if(JSON.stringify(d)!==JSON.stringify(profile)){profile=d;lsSet("hankocha-profile",profile);refreshAll()}}
+      else if(f1&&hasProfileData(profile))commitProfile();
+      f1=false;
+    },()=>{profRef=null});
+    yarnCol.onSnapshot(q=>{
+      if(q.metadata.hasPendingWrites)return;
+      const remote=q.docs.map(d=>Object.assign({id:d.id},d.data()));
+      if(f2){yarnLib.filter(y=>!remote.some(r=>r.id===y.id)).forEach(y=>{remote.push(y);putYarn(y)});f2=false}
+      yarnLib=remote;lsSet("hankocha-yarns",yarnLib);renderMy();renderOrigs();if(!$("libView").hidden)renderLib();
+    },()=>{yarnCol=null});
+    projCol.onSnapshot(q=>{
+      if(q.metadata.hasPendingWrites)return;
+      const remote=q.docs.map(d=>Object.assign({id:d.id},d.data()));
+      if(f3){projLib.filter(p=>!remote.some(r=>r.id===p.id)).forEach(p=>{remote.push(p);putProject(p)});f3=false}
+      projLib=remote;lsSet("hankocha-projects",projLib);if(!$("libView").hidden)renderLib();
+    },()=>{projCol=null});
+    renderProjState();
+  }catch(e){}
+}
+
+/* ---------- estimation ---------- */
+function lin(a,b,n){return a.v+(b.v-a.v)*(n-a.n)/(b.n-a.n)}
+function estimate(points,n){
+  const p=points.filter(x=>x.n>0&&x.v>0).sort((a,b)=>a.n-b.n);
+  const u=[];p.forEach(x=>{if(!u.length||u[u.length-1].n!==x.n)u.push(x)});
+  const hit=u.find(x=>Math.abs(x.n-n)<1e-9);
+  if(hit)return{level:"ok",kind:"exact",v:hit.v};
+  if(!u.length)return{level:"bad",kind:"few"};
+  if(u.length===1){const a=u[0],d=Math.abs(n-a.n);if(d>0.5+1e-9)return{level:"bad",kind:d?"far1":"few",dist:d};
+    const x=a.n/n,v1=a.v*Math.pow(x,0.7),v2=a.v*Math.pow(x,1.1);return{level:"warn",kind:"one",v:a.v*x,lo:Math.min(v1,v2),hi:Math.max(v1,v2),dist:d}}
+  const lo=u[0].n,hi=u[u.length-1].n;
+  if(n>lo&&n<hi){for(let i=0;i<u.length-1;i++)if(n>u[i].n&&n<u[i+1].n)return{level:"ok",kind:"interp",v:lin(u[i],u[i+1],n)}}
+  const dist=n<lo?lo-n:n-hi;
+  if(dist>0.5+1e-9)return{level:"bad",kind:"far",dist};
+  const [a,b]=n<lo?[u[0],u[1]]:[u[u.length-2],u[u.length-1]];
+  const v1=lin(a,b,n);
+  const w=10/a.v+(10/b.v-10/a.v)*(n-a.n)/(b.n-a.n),v2=10/w;
+  return{level:"warn",kind:"extra",v:(v1+v2)/2,lo:Math.min(v1,v2),hi:Math.max(v1,v2),dist};
+}
+const baseK=y=>{const ks=(y.gauges||[]).filter(g=>g.n>0&&g.s>0).map(g=>g.k||1);return ks.length?Math.min(...ks):1};
+const pts=(y,k,f)=>y.gauges.filter(g=>g.k===k&&g[f]>0&&g.n>0).map(g=>({n:g.n,v:g[f]}));
+const strandsOf=y=>[...new Set(y.gauges.filter(g=>g.n>0&&g.s>0).map(g=>g.k))].sort();
+function myGauge(){
+  if((profile.hand||"even")!=="auto")return null;
+  if(st.mode==="swatch"){
+    const L=measLen(),avg=a=>{a=a.filter(v=>v>0);return a.length?a.reduce((x,y)=>x+y,0)/a.length:null};
+    const s=avg([num(st.me.s),num(st.me.s2)]),r=avg([num(st.me.r),num(st.me.r2)]);
+    return s>0&&L>0?{s:s*10/L,r:r>0?r*10/L:null,L,two:num(st.me.s2)>0}:null}
+  const S=num(st.me.pcS),W=num(st.me.pcW),R=num(st.me.pcR),L=num(st.me.pcL);
+  if(!(S>0&&W>0))return null;
+  return{s:S/(W*(st.me.round?2:1))*10,r:(R>0&&L>0)?R/L*10:null};
+}
+/* "원작실 그대로": which original yarn I'm knitting with */
+const sameMode=()=>st.myYarn.mode==="orig";
+const pickedOrig=()=>st.origMode==="each"?st.origYarns[st.origPick]||st.origYarns[0]:null;
+const origOrder=()=>{const o=sameMode()&&pickedOrig();return o?[o,...st.origYarns.filter(x=>x!==o)]:st.origYarns};
+/* the length the stitches were counted over: 5cm by default (a 5×5 ruler), 10cm, or typed */
+const measLen=()=>{const v=num(st.me.len);return v>0?v:5};
+/* pattern gauge: as written, or from the original yarn at the pattern needle when not written */
+function patternGauge(){
+  const P=st.pattern;
+  let s=num(P.s),r=num(P.r),src="pattern",from=null;
+  let atN=null,far=null;
+  if(!(s>0)&&st.origMode==="each"){
+    for(const o of origOrder()){const n=P.n>0?P.n:refNeedle(o);if(!n)continue;
+      const e=farEstimate(pts(o,baseK(o),"s"),n);if(e.level!=="bad"){s=e.v;src="orig";from=o;atN=n;far=e.level==="far"?e:null;break}}
+    if(from&&!(r>0)){const e=farEstimate(pts(from,baseK(from),"r"),atN);if(e.level!=="bad")r=e.v}
+  }
+  if(src==="pattern"&&P.unit==="in"){if(s>0)s=s*10/10.16;if(r>0&&num(P.r)>0)r=r*10/10.16}
+  return{s:s>0?s:null,r:r>0?r:null,src,from,atN,far};
+}
+
+/* ---------- profile dialog ---------- */
+const dlg=$("profDlg");let draft=null;
+function openProfile(tab,focusKey,msg){
+  draft=clone(profile);$("dlgMsg").textContent=msg||storeLabel;
+  renderDraft();showTab(tab||"body");
+  if(dlg.showModal)dlg.showModal();else dlg.setAttribute("open","");
+  if(focusKey)setTimeout(()=>$("pb_"+focusKey)?.focus(),50);
+}
+function closeProfile(){if(dlg.close)dlg.close();else dlg.removeAttribute("open")}
+function showTab(t){
+  $("tabBody").setAttribute("aria-pressed",t==="body");$("tabFit").setAttribute("aria-pressed",t==="fit");
+  $("paneBody").hidden=t!=="body";$("paneFit").hidden=t!=="fit";
+}
+/* hand tension lives in step 1, folded: one line says which hand is in use */
+function handLine(){
+  const h=profile.hand||"even",a=handRatio();
+  if(h==="tight")return"보통보다 촘촘하게 떠요. 0.5mm 얇은 바늘로 뜬 것처럼 계산해요.";
+  if(h==="loose")return"보통보다 느슨하게 떠요. 0.5mm 굵은 바늘로 뜬 것처럼 계산해요.";
+  if(h==="auto")return a.n?`지금까지 잰 기록 ${a.n}개를 보면 판매처보다 ${fmt(Math.abs(a.r-1)*100,0)}% ${a.r>=1?"촘촘하게":"느슨하게"} 떠요. 아래에 새로 재서 넣어도 돼요.`:"아직 잰 기록이 없어서 평손으로 계산해요. 아래에 뜨다가 잰 코와 단을 넣어주세요.";
+  return"판매처·도안 게이지와 비슷하게 떠요.";
+}
+function renderHandSeg(){
+  const cur=profile.hand||"even",H=HANDS.find(x=>x[0]===cur)||HANDS[0];
+  chips($("handSeg"),HANDS.map(h=>[h[0],h[1]]),cur,k=>{profile.hand=k;commitProfile();update()});
+  $("handHint").textContent=`${handLine()} 한 번 고르면 다음 프로젝트에도 그대로 써요.`;
+  const m=myGauge();$("measureSub").hidden=cur!=="auto";
+  $("handSum").textContent=m?`내 손땀: 직접 잰 ${fmt(m.s)}코${m.r?` × ${fmt(m.r)}단`:""}`:`내 손땀: ${H[1]}`;
+}
+function renderDraft(){
+  const bf=$("bodyFields");bf.innerHTML="";
+  BODY_GROUPS.forEach(([gl,items])=>{
+    const g=document.createElement("div");g.className="bgroup";
+    g.innerHTML=`<span>${gl}</span><div class="fields"></div>`;
+    const f=g.querySelector(".fields");
+    items.forEach(([k,lab])=>{
+      const l=document.createElement("label");
+      l.innerHTML=`${lab} (cm)<input id="pb_${k}" type="number" inputmode="decimal" step="0.5" value="${draft.body[k]??""}">`;
+      l.querySelector("input").oninput=e=>{draft.body[k]=num(e.target.value)};
+      f.appendChild(l);
+    });
+    bf.appendChild(g);
+  });
+  const list=$("presetList");list.innerHTML="";
+  const gi=x=>GARMENTS.findIndex(y=>y.id===x),fi=x=>FITS.findIndex(y=>y[0]===x);
+  const keys=Object.keys(draft.fits).sort((a,b)=>{const [ga,fa]=a.split("_"),[gb,fb]=b.split("_");return gi(ga)-gi(gb)||fi(fa)-fi(fb)});
+  if(!keys.length)list.innerHTML=`<div class="empty">아직 저장된 핏이 없어요.</div>`;
+  keys.forEach(k=>{
+    const [g,f]=k.split("_"),v=draft.fits[k],G=garment(g);
+    const d=document.createElement("div");d.className="preset";
+    d.innerHTML=`<div class="top"><b>${G.name} · ${fName(f)}</b><button type="button" class="x" aria-label="이 핏 지우기">×</button></div>
+      <div class="fields">${GCOLS[g].map(c=>`<label>${fitLabel(c)}<input id="pf_${k}_${c}" type="number" inputmode="decimal" step="0.5" value="${v[c]??""}"></label>`).join("")}</div>`;
+    GCOLS[g].forEach(c=>{d.querySelector(`#pf_${k}_${c}`).oninput=e=>{v[c]=num(e.target.value)}});
+    d.querySelector(".x").onclick=()=>{delete draft.fits[k];renderDraft()};
+    list.appendChild(d);
+  });
+}
+$("newG").innerHTML=GARMENTS.map(g=>`<option value="${g.id}">${g.name}</option>`).join("");
+$("newF").innerHTML=FITS.map(([f,l])=>`<option value="${f}">${l}</option>`).join("");
+$("addPreset").onclick=()=>{const g=$("newG").value,k=g+"_"+$("newF").value;if(!draft.fits[k])draft.fits[k]={};renderDraft();$(`pf_${k}_${GCOLS[g][0]}`)?.focus()};
+$("tabBody").onclick=()=>showTab("body");$("tabFit").onclick=()=>showTab("fit");
+$("cancelProf").onclick=closeProfile;
+$("saveProf").onclick=async()=>{
+  Object.keys(draft.fits).forEach(k=>{const v=draft.fits[k];Object.keys(v).forEach(c=>{if(v[c]==null)delete v[c]});if(!Object.keys(v).length)delete draft.fits[k]});
+  profile=draft;closeProfile();refreshAll();
+  const where=await commitProfile();
+  flash(where==="account"?"내 계정에 저장했어요":"이 기기에 저장했어요");
+};
+$("openProf").onclick=()=>openProfile("body");
+let recT=null;
+$("recBody").oninput=e=>{profile.body[garment(st.garment).main]=num(e.target.value);profileSummary();renderRec();clearTimeout(recT);recT=setTimeout(commitProfile,600)};
+function flash(t){const s=$("profSum");s.textContent=t;setTimeout(profileSummary,2200)}
+function profileSummary(){
+  const b=profile.body,n=Object.keys(profile.fits).length,bits=[];
+  if(b.height)bits.push(`키 ${fmt(b.height)}`);
+  if(b.chest)bits.push(`가슴 ${fmt(b.chest)}`);
+  if(b.waist)bits.push(`허리 ${fmt(b.waist)}`);
+  const any=bits.length||n;
+  bits.push(n?`저장된 핏 ${n}개`:"저장된 핏 없음");
+  $("profSum").textContent=any?bits.join(" · "):"내 치수만 넣으면 사이즈를 추천해드려요";
+  $("openProf").textContent=any?"내 치수와 핏 수정하기":"내 치수 입력하기";
+}
+
+/* ---------- projects ---------- */
+let newArmed=false;
+function renderProjState(){
+  const el=$("projState");if(!el)return;
+  const saved=projLib.find(p=>p.id===st.id);
+  if(newArmed){el.className="pstate dirty";el.textContent="저장 안 된 변경이 있어요. 새 프로젝트를 한 번 더 누르면 지우고 새로 시작해요.";return}
+  if(!saved){el.className="pstate";el.textContent=typeof atLimit==="function"&&atLimit()?`무료 버전은 프로젝트 ${FREE_LIMIT}개까지 저장돼요 · 저장을 누르면 프리미엄 안내가 나와요`:`아직 저장하지 않은 프로젝트예요 · 저장하면 ${storeLabel.replace("저장돼요","남아요")}`;return}
+  if(isDirty()){el.className="pstate dirty";el.textContent="저장 안 된 변경이 있어요";return}
+  el.className="pstate";el.textContent=`저장됨 · ${when(saved.updatedAt)}`;
+}
+async function saveProject(auto){
+  if(!projLib.some(p=>p.id===st.id)&&atLimit()){if(auto!==true)openPrem();return}
+  {const b=document.querySelector("#answer .reco .rhead");st.summary=b?b.textContent.replace(/\s+/g," ").trim():"";}
+  if(st.example){delete st.example;renderExample()}
+  if(!st.name.trim()){const y=st.myYarn.mode==="orig"?"원작실":yLabel(st.myYarn);st.name=[garment(st.garment).name,y].filter(Boolean).join(" · ");$("projName").value=st.name}
+  st.updatedAt=Date.now();
+  const copy=clone(st),i=projLib.findIndex(p=>p.id===st.id);
+  if(i>=0)projLib[i]=copy;else projLib.unshift(copy);
+  savedJSON=projJSON();lsSet("hankocha-current-saved",savedJSON);saveDraft();
+  const where=await putProject(copy);
+  $("projState").className="pstate";$("projState").textContent=`${auto===true?"자동 저장됨":"저장됨"} · ${where==="account"?"내 계정":"이 기기"} · ${when(st.updatedAt)}`;
+}
+function renderExample(){$("exBar").hidden=!st.example}
+function loadProject(p){
+  st=normalizeProject(clone(p));savedJSON=projJSON();lsSet("hankocha-current-saved",savedJSON);newArmed=false;
+  renderProject();
+}
+$("projSave").onclick=()=>saveProject(false);
+$("projOpen").onclick=()=>showView("lib","proj");
+
+$("projNew").onclick=()=>{
+  const touched=projLib.some(p=>p.id===st.id)?isDirty():JSON.stringify(st)!==JSON.stringify(normalizeProject(Object.assign(blankProject(),{id:st.id})));
+  if(touched&&!newArmed){newArmed=true;renderProjState();setTimeout(()=>{newArmed=false;renderProjState()},4000);return}
+  newArmed=false;st=normalizeProject(blankProject());savedJSON=null;lsSet("hankocha-current-saved",null);renderProject();goStep(1)
+};
+$("projName").oninput=e=>{st.name=e.target.value;saveDraft()};
+
+/* ---------- yarn blocks (my yarn / original yarn) ---------- */
+/* ===== yarn blocks: my yarn, combo parts, original yarns ===== */
+const FIBERS=["울","메리노","알파카","모헤어","캐시미어","야크","면","린넨","실크","아크릴","나일론","폴리에스터","레이온","기타"];
+let editYarn=null,editId=null;
+const yarnOf=w=>w==="my"?st.myYarn:w==="e"?editYarn:w[0]==="p"?(st.myYarn.parts||[])[+w.slice(1)]:st.origYarns[+w.slice(1)];
+const per100=y=>y.weight>0&&y.length>0?y.length/y.weight*100:null;
+const fiberPct=(y,names)=>(y.fibers||[]).filter(f=>names.includes(f.f)).reduce((a,f)=>a+(+f.p||0),0);
+const isHairyGuess=y=>fiberPct(y,["모헤어"])>=30||/모헤어|mohair|브러시|brushed|헤일로|halo/i.test((y.brand||"")+" "+(y.name||""));
+const isHairy=y=>y.hairy===true||y.hairy===false?y.hairy:isHairyGuess(y);
+const yarnRecord=y=>{const r={brand:(y.brand||"").trim(),name:y.name.trim(),gauges:clone(y.gauges.filter(g=>g.n>0&&g.s>0)),weight:y.weight??null,length:y.length??null,
+  needleMin:y.needleMin??null,needleMax:y.needleMax??null,fibers:clone((y.fibers||[]).filter(f=>f.f))};
+  if(y.hairy===true||y.hairy===false)r.hairy=y.hairy;
+  if(y.mode==="combo")r.parts=(y.parts||[]).map(p=>yarnRecord(p));return r};
+const comboName=()=>(st.myYarn.parts||[]).map(p=>yLabel(p)).filter(Boolean).join(" + ");
+/* a yarn's display name, and a key that ignores spacing, brackets and case so "[니팅앤] 메리노 DK" = "니팅앤 메리노dk" */
+const yLabel=y=>y?[y.brand,y.name].map(x=>String(x||"").trim()).filter(Boolean).join(" · "):"";
+const normKey=x=>String(x||"").toLowerCase().normalize("NFC").replace(/[\s\[\](){}<>·・.,_\-\/\\'"!?~:;|+*&#@%^=`]+/g,"");
+const yKey=y=>normKey((y.brand||"")+(y.name||""));
+const findYarn=y=>{const k=yKey(y);return k?yarnLib.find(x=>yKey(x)===k):null};
+
+/* the original-yarn block lives in step 2, or in step 1 when I knit with the original yarn */
+function placeOrig(){
+  const same=sameMode(),blk=$("origSub"),to=same?$("sameSlot"):$("origSlot");
+  if(blk.parentNode!==to)to.appendChild(blk);
+  $("origMoved").hidden=!same;
+  $("origH").textContent=same?(st.origMode==="together"?"원작 합사 그대로 떠요":"도안의 원작실 중 어떤 걸로 떠요?"):"원작실";
+}
+function renderOrigs(){
+  placeOrig();
+  const list=$("origList");list.innerHTML="";
+  const pick=sameMode()&&st.origMode==="each";
+  if(st.origPick>=st.origYarns.length)st.origPick=0;
+  st.origYarns.forEach((y,i)=>{
+    const c=document.createElement("div");c.className="ycard"+(pick&&i===st.origPick?" picked":"");
+    c.innerHTML=`<div class="ytop">${pick?`<label class="opick"><input type="radio" name="opick" ${i===st.origPick?"checked":""}> <b>원작실 ${i+1}</b>${st.origYarns.length>1?`<span class="diff">${i===st.origPick?"이걸로 떠요":"이걸로 뜨기"}</span>`:""}</label>`:`<b>원작실 ${i+1}</b>`}${st.origYarns.length>1?`<button type="button" class="x" aria-label="원작실 ${i+1} 빼기">×</button>`:""}</div><div id="o${i}Yarn" style="display:flex;flex-direction:column;gap:10px"></div>`;
+    const x=c.querySelector(".x");if(x)x.onclick=()=>{st.origYarns.splice(i,1);if(st.origPick>=i&&st.origPick>0)st.origPick--;renderOrigs();update()};
+    const r=c.querySelector('input[type="radio"]');if(r)r.onchange=()=>{st.origPick=i;renderOrigs();update()};
+    list.appendChild(c);renderYarn("o"+i);
+  });
+  $("omEach").setAttribute("aria-pressed",st.origMode==="each");$("omTogether").setAttribute("aria-pressed",st.origMode==="together");
+}
+function renderSamePick(){}
+function renderMy(){
+  const combo=st.myYarn.mode==="combo",same=sameMode();
+  $("ymSingle").setAttribute("aria-pressed",!combo&&!same);$("ymCombo").setAttribute("aria-pressed",combo);$("ymOrig").setAttribute("aria-pressed",same);
+  $("myYarn").hidden=same;placeOrig();
+  if(same){
+    $("myHint").innerHTML="도안에 나온 실 그대로 떠요. 실이 같으니 차이는 <b>내 손땀</b>에서만 생겨요. 원작실 정보는 몰라도 도안 게이지만 있으면 계산돼요.";
+    $("partList").innerHTML="";$("addPart").hidden=true;
+    renderYarn("my");renderStrand();return}
+  $("myHint").textContent=combo?"같이 쥐고 뜰 실을 하나씩 넣어주세요. 판매처 게이지나 무게·길이만 있어도 합친 굵기를 짐작해드려요.":"판매 페이지에 적힌 바늘별 게이지를 10cm 기준으로 넣어주세요. 같은 합수로 2개 이상 있으면 가장 정확해요.";
+  const pl=$("partList");pl.innerHTML="";$("addPart").hidden=!combo;
+  if(combo){
+    st.myYarn.parts.forEach((p,i)=>{
+      const c=document.createElement("div");c.className="ycard";
+      const hy=isHairy(p);
+      c.innerHTML=`<div class="ytop"><b>합사 실 ${i+1}</b>${st.myYarn.parts.length>2?`<button type="button" class="x" aria-label="합사 실 ${i+1} 빼기">×</button>`:""}</div>
+        <span class="hlab">이 실은 어떤 실이에요? <span class="diff">모헤어·브러시 실은 털 뜨는 실</span></span>
+        <div class="hseg" role="group" aria-label="실 종류"><button type="button" data-h="0" aria-pressed="${!hy}">보통 실</button><button type="button" data-h="1" aria-pressed="${hy}">털 뜨는 실</button></div>
+        <div id="p${i}Yarn" style="display:flex;flex-direction:column;gap:10px"></div>`;
+      const x=c.querySelector(".x");if(x)x.onclick=()=>{st.myYarn.parts.splice(i,1);renderMy();update()};
+      c.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{p.hairy=b.dataset.h==="1";renderMy();update()});
+      pl.appendChild(c);renderYarn("p"+i);
+      const inf=$("p"+i+"Info");if(inf)inf.open=true;
+    });
+  }
+  renderYarn("my");renderStrand();
+}
+
+function renderYarn(w){
+  const box=$(w+"Yarn"),y=yarnOf(w);if(!box||!y)return;
+  if(!Array.isArray(y.fibers))y.fibers=[];if(!Array.isArray(y.gauges))y.gauges=[];
+  const head=w==="my"&&y.mode==="combo",part=w[0]==="p";
+  const lib=yarnLib.filter(l=>!(part&&l.parts)).slice().sort((a,b)=>yLabel(a).localeCompare(yLabel(b),"ko"));
+  const p1=per100(y);
+  box.innerHTML=`<div class="yhead${head?"":" b3"}">
+      ${head?"":`<label>브랜드<input id="${w}Brand" type="text" value="${esc(y.brand||"")}" placeholder="예: 니팅앤"></label>`}
+      <label>${head?"합사 이름":"실 이름"}<input id="${w}Name" type="text" value="${esc(y.name)}" placeholder="${head?(comboName()||"예: 알파카 + 키드모헤어"):w==="my"?"예: 메리노 DK":part?"합사할 실":"도안에 적힌 실"}"></label>
+      <label>저장된 실<select id="${w}Pick"><option value="">${lib.length?"불러오기":"저장된 실 없음"}</option>${lib.map(l=>`<option value="${l.id}">${esc(yLabel(l))}${l.parts?" (합사)":""}</option>`).join("")}</select></label>
+    </div>
+    ${head?`<p class="hint">합사 게이지를 알면 넣어주세요. 몰라도 돼요. 10cm쯤 뜬 뒤 10cm 안의 코와 단을 세어 넣으면 돼요.</p>`:""}
+    <div class="grid g5"><span class="h">합</span><span class="h">바늘(mm)</span><span class="h">코</span><span class="h">단</span><span></span></div>
+    <div id="${w}Rows" style="display:flex;flex-direction:column;gap:8px"></div>
+    ${head?"":`<details class="yinfo" id="${w}Info"${p1||y.fibers.length||y.needleMin?" open":""}><summary>무게·길이·소재·권장 바늘${p1?` · 100g당 ${fmt(p1,0)}m`:""}</summary>
+      <div class="fields yi">
+        <label>무게(g)<input id="${w}W" type="number" inputmode="decimal" value="${y.weight??""}" placeholder="50"></label>
+        <label>길이(m)<input id="${w}L" type="number" inputmode="decimal" value="${y.length??""}" placeholder="125"></label>
+        <label>권장 바늘(mm)<span class="nrange"><input id="${w}N1" type="number" step="0.25" inputmode="decimal" value="${y.needleMin??""}" aria-label="권장 바늘 최소"><span>~</span><input id="${w}N2" type="number" step="0.25" inputmode="decimal" value="${y.needleMax??""}" aria-label="권장 바늘 최대"></span></label>
+      </div>
+      <div id="${w}Fib" class="fibs"></div>
+      <button type="button" class="add" id="${w}AddF">+ 소재</button>
+    </details>`}
+    <div class="yfoot"><button class="add" type="button" id="${w}AddG">+ 게이지</button><button type="button" id="${w}Keep">이 실 저장</button><span class="ystate" id="${w}YState"></span></div>`;
+  const rows=$(w+"Rows");
+  y.gauges.forEach((g,i)=>{
+    const d=document.createElement("div");d.className="grid g5";
+    d.innerHTML=`<select aria-label="합 수">${Array.from({length:12},(_,i)=>`<option value="${i+1}">${i+1}합</option>`).join("")}</select>
+      <input type="number" step="0.25" inputmode="decimal" aria-label="바늘 mm" value="${g.n??""}">
+      <input type="number" step="0.5" inputmode="decimal" aria-label="10cm당 코" value="${g.s!=null?fmt(g.s):""}">
+      <input type="number" step="0.5" inputmode="decimal" aria-label="10cm당 단" placeholder="—" value="${g.r!=null?fmt(g.r):""}">
+      <button class="x" type="button" aria-label="이 게이지 지우기">×</button>${g.me?`<span class="metag">내가 잰 값</span>`:""}`;
+    const k=d.querySelector("select"),[n,s,r]=d.querySelectorAll("input");
+    k.value=String(g.k);k.onchange=()=>{g.k=+k.value;if(w==="my")renderStrand();update()};
+    n.oninput=()=>{g.n=num(n.value);update()};
+    s.oninput=()=>{g.s=num(s.value);if(w==="my")renderStrand();update()};
+    r.oninput=()=>{g.r=num(r.value);update()};
+    d.querySelector(".x").onclick=()=>{y.gauges.splice(i,1);renderYarn(w);if(w==="my")renderStrand();update()};
+    rows.appendChild(d);
+  });
+  if(!head){
+    const bindN=(id,key)=>{$(w+id).oninput=e=>{y[key]=num(e.target.value);const q=per100(y);$(w+"Info").querySelector("summary").textContent=`무게·길이·소재·권장 바늘${q?` · 100g당 ${fmt(q,0)}m`:""}`;update()}};
+    bindN("W","weight");bindN("L","length");bindN("N1","needleMin");bindN("N2","needleMax");
+    const fb=$(w+"Fib");
+    (y.fibers||[]).forEach((f,i)=>{
+      const d=document.createElement("div");d.className="fib";
+      d.innerHTML=`<select aria-label="소재">${FIBERS.map(x=>`<option${x===f.f?" selected":""}>${x}</option>`).join("")}</select>
+        <span class="pct"><input type="number" inputmode="numeric" aria-label="비율 %" value="${f.p??""}"><span>%</span></span>
+        <button class="x" type="button" aria-label="이 소재 지우기">×</button>`;
+      d.querySelector("select").onchange=e=>{f.f=e.target.value;update()};
+      d.querySelector("input").oninput=e=>{f.p=num(e.target.value);update()};
+      d.querySelector(".x").onclick=()=>{y.fibers.splice(i,1);renderYarn(w);update()};
+      fb.appendChild(d);
+    });
+    $(w+"AddF").onclick=()=>{const used=(y.fibers||[]).reduce((a,f)=>a+(+f.p||0),0);y.fibers.push({f:"울",p:used<100?100-used:null});renderYarn(w);$(w+"Info").open=true;update()};
+  }
+  $(w+"Name").oninput=e=>{y.name=e.target.value;yState(w);if(part)renderYarn("my");if(w[0]==="o"&&st.myYarn.mode==="orig")renderSamePick();saveDraft()};
+  if($(w+"Brand"))$(w+"Brand").oninput=e=>{y.brand=e.target.value;yState(w);if(part)renderYarn("my");if(w[0]==="o"&&st.myYarn.mode==="orig")renderSamePick();saveDraft()};
+  $(w+"Pick").onchange=e=>{const l=yarnLib.find(x=>x.id===e.target.value);if(!l)return;
+    Object.assign(y,fixY(clone(l)));delete y.id;delete y.updatedAt;
+    if(w==="my"){y.mode=l.parts?"combo":"single";renderMy()}else renderYarn(w);
+    if(part)renderYarn("my");
+    if(w[0]==="o"&&st.myYarn.mode==="orig")renderSamePick();
+    update();$(w+"YState").textContent=`불러왔어요 · ${yLabel(l)}`};
+  $(w+"AddG").onclick=()=>{y.gauges.push({k:baseK(y),n:null,s:null,r:null});renderYarn(w);update()};
+  $(w+"Keep").onclick=()=>keepYarn(w);
+  if(w==="e"){$("ePick").closest("label").hidden=true;$("eKeep").hidden=true;$("eYState").hidden=true}
+  yState(w);
+}
+async function keepYarn(w){
+  const y=yarnOf(w),head=w==="my"&&y.mode==="combo";
+  if(head&&!y.name.trim())y.name=comboName();
+  const name=y.name.trim();
+  if(!name){$(w+"Name").focus();$(w+"YState").textContent="실 이름을 먼저 넣어주세요";return}
+  const rec=yarnRecord(y);
+  if(!rec.gauges.length&&!per100(rec)&&!rec.parts){$(w+"YState").textContent="게이지나 무게·길이를 하나 이상 넣어주세요";return}
+  let l=findYarn(rec);
+  if(l){Object.assign(l,rec,{updatedAt:Date.now()});if(!rec.parts)delete l.parts}else{l=Object.assign({id:newId(),updatedAt:Date.now()},rec);yarnLib.push(l)}
+  const where=await putYarn(l);renderMy();renderOrigs();
+  $(w+"YState").textContent=`저장했어요 · ${where==="account"?"내 계정":"이 기기"}`;
+}
+function yState(w){
+  const y=yarnOf(w),el=$(w+"YState");if(!el||!y||w==="e")return;
+  const l=y.name.trim()?findYarn(y):null;
+  if(!l){el.textContent=y.name.trim()?"실 목록에 없는 실이에요":"";return}
+  const a=yarnRecord(y),b=Object.assign({},l);delete b.id;delete b.updatedAt;
+  const same=JSON.stringify(a)===JSON.stringify(yarnRecord(fixY(clone(b))));
+  el.textContent=same?"실 목록에 저장된 실":"실 목록과 달라요 · 저장하면 덮어써요";
+}
+
+/* ===== combo estimate: rough starting gauge from the parts ===== */
+/* needles people actually own: common first, thin ones are "special" */
+const COMMON_N=[3,3.5,4,4.5,5,5.5,6,7,8,9,10,12],THIN_N=[2,2.25,2.5,2.75];
+const OWN_N=[...THIN_N,...COMMON_N];
+function snapNeedle(n){if(!(n>0))return n;return OWN_N.reduce((a,b)=>Math.abs(b-n)<Math.abs(a-n)?b:a)}
+const isSpecialN=n=>THIN_N.includes(n);
+const NEEDLE_TABLE=[[30,2.5],[28,2.75],[24,3.25],[21,4],[18,4.75],[16,5.5],[14,6.25],[12,7],[10,8],[8,9],[6.5,10],[5,12]];
+function typicalNeedle(s){
+  const t=NEEDLE_TABLE;if(s>=t[0][0])return t[0][1];if(s<=t[t.length-1][0])return t[t.length-1][1];
+  for(let i=0;i<t.length-1;i++)if(s<=t[i][0]&&s>=t[i+1][0])return t[i][1]+(t[i+1][1]-t[i][1])*(t[i][0]-s)/(t[i][0]-t[i+1][0]);
+}
+function refGauge(y){
+  const gs=y.gauges.filter(g=>g.k===baseK(y)&&g.n>0&&g.s>0);if(!gs.length)return null;
+  const mid=y.needleMin>0&&y.needleMax>0?(y.needleMin+y.needleMax)/2:null;
+  const g=mid?gs.reduce((a,b)=>Math.abs(b.n-mid)<Math.abs(a.n-mid)?b:a):gs[0];
+  return{n:g.n,s:g.s,r:g.r>0?g.r:null};
+}
+/* ===== held together: each strand's size at the needle, then add cross-sections =====
+   A normal strand counts in full: stitches ≈ (Σ 1/s²)^-½  (two DK 22 → ~15.6).
+   A hairy strand (mohair, brushed) adds only 15–25% of a strand: worked back from published
+   held-together patterns (fingering + silk mohair 21 sts on 4mm, 23 on 3.5mm; two silk mohair 20 on 4mm). */
+const HAIRY_W=[0.15,0.25];
+function strandAt(y,n){
+  const k=baseK(y),pp=pts(y,k,"s");
+  if(pp.length){const e=farEstimate(pp,n);if(e.level!=="bad"){const f=Math.sqrt(k);
+    const sp=e.level==="ok"?0.03:0.08;return{s:e.v*f,lo:(e.lo??e.v*(1-sp))*f,hi:(e.hi??e.v*(1+sp))*f,src:"gauge"}}}
+  const L=per100(y);
+  if(L>0&&!isHairy(y)){const sT=1.42*Math.sqrt(L),nT=typicalNeedle(sT),v=sT*Math.pow(nT/n,0.85);return{s:v,lo:v*0.92,hi:v*1.08,src:"len"}}
+  return null;
+}
+function comboAt(n){
+  const parts=st.myYarn.parts||[];
+  if(parts.length<2)return{bad:"합사할 실을 2개 이상 넣어주세요."};
+  const H=handInfo(),at=n+H.off;
+  const ss=parts.map(p=>({p,hairy:isHairy(p),g:strandAt(p,at),name:yLabel(p)||"이름 없는 실"}));
+  const miss=ss.find(x=>!x.g);
+  if(miss)return{bad:miss.hairy?`${miss.name}: 털 뜨는 실이라 무게·길이로는 굵기를 알 수 없어요. 판매처 게이지(바늘과 코 수)를 넣어주세요.`:`${miss.name}: 판매처 게이지나 무게·길이를 넣어주세요.`};
+  const normal=ss.filter(x=>!x.hairy),hairy=ss.filter(x=>x.hairy);
+  let base=normal;if(!base.length){const t=hairy.slice().sort((a,b)=>a.g.s-b.g.s)[0];base=[t]}
+  const extra=ss.filter(x=>!base.includes(x));
+  const comb=(key,w)=>Math.pow(base.reduce((a,x)=>a+1/x.g[key]**2,0)+extra.reduce((a,x)=>a+w/x.g[key]**2,0),-0.5);
+  const v=comb("s",(HAIRY_W[0]+HAIRY_W[1])/2),lo=comb("lo",HAIRY_W[1]),hi=comb("hi",HAIRY_W[0]);
+  const rs=parts.flatMap(p=>(p.gauges||[]).filter(g=>g.s>0&&g.r>0&&!g.me).map(g=>g.r/g.s)),ratio=rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:1.35;
+  const r=H.ratio;
+  return{v:v*r,lo:Math.min(lo,hi)*r,hi:Math.max(lo,hi)*r,ratio,strands:ss,base,extra,n};
+}
+/* the needle this combination wants: combine each strand at its own usual needle, then read a usual needle for that size */
+function comboEstimate(){
+  const parts=st.myYarn.parts||[];
+  const n0=st.pattern.n>0?st.pattern.n:4,c0=comboAt(n0);if(c0.bad)return c0;
+  const nat=parts.map(p=>{const rn=refNeedle(p);if(rn){const g=strandAt(p,rn);if(g)return g.s}
+    const L=per100(p);return L>0&&!isHairy(p)?1.42*Math.sqrt(L):null});
+  let nRef=n0;
+  if(nat.every(v=>v>0)){const hy=parts.map(isHairy);let idx=parts.map((_,i)=>i).filter(i=>!hy[i]);
+    if(!idx.length)idx=[nat.indexOf(Math.min(...nat))];
+    const w=(HAIRY_W[0]+HAIRY_W[1])/2,sum=nat.reduce((a,v,i)=>a+(idx.includes(i)?1:w)/v**2,0);
+    nRef=snapNeedle(typicalNeedle(Math.pow(sum,-0.5)))}
+  return Object.assign({},c0,{nRef});
+}
+function renderCombo(){
+  const box=$("comboCard");if(!box)return;
+  if(st.myYarn.mode!=="combo"){box.hidden=true;return}
+  box.hidden=false;
+  const own=strandsOf(st.myYarn).length,e=comboEstimate();
+  if(e.bad){box.className="info combo bad";box.innerHTML=`<b>합치면 이렇게 돼요</b><span>${esc(e.bad)}</span>`;return}
+  const N=st.pattern.n>0?st.pattern.n:e.nRef,c=comboAt(N),W=["레이스","핑거링","스포츠","DK","워스티드","청키","슈퍼 청키"];
+  const wt=s=>s>=30?W[0]:s>=26?W[1]:s>=23?W[2]:s>=20.5?W[3]:s>=16?W[4]:s>=11?W[5]:W[6];
+  const lines=c.strands.map(x=>`<li><b>${esc(x.name)}</b> · ${mmTxt(N)}에서 혼자 약 ${fmt(x.g.s)}코${x.g.src==="len"?" (무게·길이로 짐작)":""} → ${c.base.includes(x)?"굵기를 그대로 더해요":"털 뜨는 실이라 굵기를 15~25%만 더해요"}</li>`).join("");
+  box.className="info combo";
+  box.innerHTML=`<b>합치면 이렇게 돼요</b>
+    <p class="cbig">${mmTxt(N)}에서 10cm에 <b>${fmt(c.lo,0)}~${fmt(c.hi,0)}코</b> · ${wt(c.v)} 정도 굵기</p>
+    ${st.pattern.n>0?`<span>도안 바늘 ${mmTxt(N)} 기준이에요.</span>`:`<span>이 조합은 보통 <b>${mmTxt(e.nRef)}</b> 근처 바늘이 알맞아요. 도안 바늘을 넣으면 그 바늘 기준으로 바꿔 보여드려요.</span>`}
+    <ul class="clist">${lines}</ul>
+    ${own?`<span class="diff">위에 합사 게이지를 직접 넣어서, 계산에는 그 값을 써요.</span>`:""}
+    <p class="csafe">⚠ <b>정답이 아니라 짐작이에요.</b> 실 꼬임, 털 양, 손땀에 따라 합사 게이지는 크게 달라져요. 꼭 조금 떠서 코와 단을 세어 <button type="button" class="link" id="comboMeasure">내 손땀 › 내 기록으로</button>에 넣어주세요. 잰 값이 있으면 그 값으로 계산해요.</p>`;
+  $("comboMeasure").onclick=()=>{if((profile.hand||"even")!=="auto"){profile.hand="auto";commitProfile();update()}goMeasure()};
+}
+/* ===== fiber notes ===== */
+function fiberNotes(){
+  const ys=st.myYarn.mode==="combo"?st.myYarn.parts:sameMode()?[pickedOrig()].filter(Boolean):[st.myYarn],out=[];
+  ys.forEach(y=>{
+    const nm=y.name.trim()||"이 실";
+    const plant=fiberPct(y,["면","린넨","실크","레이온"]);
+    if(plant>=50)out.push(`${esc(nm)}: 면·린넨·실크 계열이 ${fmt(plant,0)}%예요. 탄성이 적어서 세탁하면 세로로 늘어나기 쉬워요. 총장과 소매는 조금 짧게 뜨는 걸 추천해요.`);
+  });
+  return out;
+}
+
+/* ---------- step 2, 3, 4 inputs ---------- */
+function renderStrand(){
+  $("strand").closest("label").hidden=st.myYarn.mode==="combo"||sameMode();
+  if(st.myYarn.mode==="combo"||sameMode())st.strand=1;
+  const ks=strandsOf(st.myYarn);if(!ks.includes(st.strand)&&ks.length)st.strand=ks[0];
+  const s=$("strand");s.innerHTML=(ks.length?ks:[1]).map(k=>`<option value="${k}">${k}합</option>`).join("");s.value=String(st.strand);
+}
+const mainKey=()=>{const cs=st.pattern.cols,m=garment(st.garment).main;return cs.some(c=>c.key===m)?m:(cs.find(c=>c.dir==="s")||{}).key};
+const mainCol=()=>st.pattern.cols.find(c=>c.key===mainKey());
+const mv=(z,k)=>{const v=num(z.m[k]);return v==null?null:v*(st.pattern.unit==="in"?2.54:1)};
+const mainOf=z=>mv(z,mainKey());
+function syncCols(){
+  const P=st.pattern,want=GCOLS[st.garment];
+  const used=k=>P.sizes.some(z=>filled(z.m[k]));
+  P.cols=P.cols.filter(c=>want.includes(c.key)||used(c.key)||c.custom);
+  want.forEach(k=>{if(!P.cols.some(c=>c.key===k))P.cols.push(colDef(k))});
+  P.cols.sort((a,b)=>{const ia=want.indexOf(a.key),ib=want.indexOf(b.key);return (ia<0?99:ia)-(ib<0?99:ib)});
+}
+function renderSizes(){
+  const P=st.pattern,box=$("sizeRows");
+  const head=`<tr><th class="lab">항목 (${st.pattern.unit==="in"?"인치":"cm"})</th>${P.sizes.map((z,i)=>`<th><input id="zn${i}" type="text" aria-label="사이즈 이름" value="${esc(z.name)}"><button type="button" class="x sm" data-dz="${i}" aria-label="${esc(z.name)} 사이즈 지우기">×</button></th>`).join("")}</tr>`;
+  const body=P.cols.map((c,ci)=>`<tr><th class="lab">${c.custom?`<input id="cn${ci}" type="text" aria-label="항목 이름" value="${esc(c.name)}" placeholder="항목 이름">`:`<span>${esc(c.name)}</span>`}
+      <span class="dir">${c.dir==="s"?"가로":"세로"}${c.key===mainKey()?" · 기준":""}</span>
+      ${c.key!==mainKey()?`<button type="button" class="x sm" data-dc="${ci}" aria-label="${esc(c.name)} 항목 지우기">×</button>`:""}</th>
+    ${P.sizes.map((z,i)=>`<td><input id="zv${i}_${ci}" type="number" step="0.5" inputmode="decimal" aria-label="${esc(z.name)} ${esc(c.name)}" value="${z.m[c.key]??""}"></td>`).join("")}</tr>`).join("");
+  box.innerHTML=`<table class="mtbl"><thead>${head}</thead><tbody>${body}</tbody></table>`;
+  P.sizes.forEach((z,i)=>{
+    $("zn"+i).oninput=e=>{const old=z.name;z.name=e.target.value;if(st.want===old)st.want=z.name;renderWant();update()};
+    P.cols.forEach((c,ci)=>{$(`zv${i}_${ci}`).oninput=e=>{z.m[c.key]=num(e.target.value);if(c.key===mainKey())renderWant();update()}});
+  });
+  P.cols.forEach((c,ci)=>{const el=$("cn"+ci);if(el)el.oninput=e=>{c.name=e.target.value;update()}});
+  box.querySelectorAll("[data-dz]").forEach(b=>b.onclick=()=>{P.sizes.splice(+b.dataset.dz,1);renderSizes();renderWant();update()});
+  box.querySelectorAll("[data-dc]").forEach(b=>b.onclick=()=>{const c=P.cols.splice(+b.dataset.dc,1)[0];P.sizes.forEach(z=>delete z.m[c.key]);renderSizes();update()});
+}
+function chips(box,items,cur,onPick){
+  box.innerHTML="";items.forEach(([k,l])=>{
+    const b=document.createElement("button");b.type="button";b.textContent=l;b.setAttribute("aria-pressed",cur===k);
+    b.onclick=()=>onPick(k);box.appendChild(b)});
+}
+function renderSegs(){
+  chips($("garmentSeg"),GARMENTS.map(g=>[g.id,g.name]),st.garment,k=>{st.garment=k;syncCols();renderSegs();renderSizes();renderWant();update()});
+  chips($("fitSeg"),FITS,st.fit,k=>{st.fit=k;renderSegs();update()});
+}
+function renderWant(){
+  const zs=st.pattern.sizes.filter(z=>z.name);
+  chips($("wantSeg"),zs.map(z=>[z.name,mainOf(z)>0?`${z.name} · ${fmt(mainOf(z))}cm`:z.name]),st.want,k=>{st.want=k;renderWant();update()});
+}
+
+/* ---------- original yarn vs pattern gauge ---------- */
+function renderOrigInfo(){
+  const box=$("origInfo"),P=st.pattern,pg=patternGauge();
+  const nmOf=(o,i)=>o.name.trim()?`"${esc(o.name.trim())}"`:`원작실 ${i+1}`;
+  $("patSrc").innerHTML=pg.src==="orig"?`<b>원작실 게이지로 계산 중</b> · ${esc(pg.from.name.trim()||"원작실")} ${mmTxt(pg.atN)}에서 ${fmt(pg.s)}코${pg.r?` × ${fmt(pg.r)}단`:""}${P.n>0?"":" (원작실 판매처 바늘 기준)"}${pg.far?` · <span class="warnc">${mmTxt(pg.far.from)} 게이지에서 짐작한 값이라 참고만 해주세요</span>`:""}`:"";
+  const withG=st.origYarns.map((o,i)=>({o,i})).filter(x=>x.o.gauges.some(g=>g.s>0));
+  if(st.origMode==="together"){
+    box.hidden=false;
+    box.innerHTML=`<span>합사 도안은 위에 적힌 <b>도안 게이지가 합사 게이지</b>예요. 그 값을 기준으로 계산해요.</span>
+      <span class="diff">원작 조합 그대로 뜨면 평손 기준 도안 바늘로 도안대로 뜨면 돼요. 조합을 바꾸면 "어떤 실로 뜰 거예요?" 단계에 내 조합의 합사 게이지를 넣어주세요. 실 이름은 "알파카 + 키드모헤어"처럼 쓰면 실 목록에도 조합째 저장돼요.</span>`;return;
+  }
+  if(!withG.length||!(num(P.s)>0)){box.hidden=true;return}
+  box.hidden=false;
+  const lines=withG.map(({o,i})=>{
+    const N=P.n>0?P.n:refNeedle(o),e=farEstimate(pts(o,baseK(o),"s"),N),nm=nmOf(o,i)+(farEstimate(pts(o,baseK(o),"s"),N).level==="far"?" (짐작)":"");
+    if(e.level==="bad")return`<span>${nm}: 게이지로 도안 바늘 ${mmTxt(N)}을 계산할 수 없어요. 가까운 바늘의 게이지를 넣어주세요.</span>`;
+    if(!(num(P.s)>0))return`<span>${nm}: 판매처 게이지로는 ${mmTxt(N)}에서 약 <b>${fmt(e.v)}코</b>예요.</span>`;
+    const pct=(num(P.s)/e.v-1)*100;
+    const head=`${nm}: 판매처 게이지로는 ${mmTxt(N)}에서 약 <b>${fmt(e.v)}코</b>, 도안은 <b>${fmt(num(P.s))}코</b>예요.`;
+    if(Math.abs(pct)<3)return`<span>${head} <span class="diff">거의 같아서 평손이면 이 실로 도안대로 뜨면 돼요.</span></span>`;
+    return`<span>${head} 디자이너가 판매처보다 약 ${fmt(Math.abs(pct),0)}% ${pct>0?"촘촘하게":"느슨하게"} 떴어요. 평손이면 <b>이 실로 도안 바늘 그대로 떠도 ${pct>0?"크게":"작게"}</b> 나올 수 있어요.</span>`;
+  });
+  box.innerHTML=lines.join("");
+}
+
+/* ---------- size recommendation ---------- */
+/* size from my body: a saved fit wins; otherwise typical ease for the fit */
+const EASE_TOP={slim:[0,5],regular:[5,10],over:[15,25]},EASE_SKIRT={slim:[0,3],regular:[3,8],over:[10,16]};
+const EASE_PCT={socks:{slim:[.88,.92],regular:[.88,.92],over:[.93,.97]},hat:{slim:[.88,.92],regular:[.9,.95],over:[.98,1.02]}};
+const BODY_OF={chest:"chest",shoulder:"shoulder",sleeve:"arm",waist:"waist",hip:"hip",footCirc:"footCirc",footLen:"footLen",head:"head"};
+function easeRange(gid,fit,bv){
+  if(EASE_PCT[gid]){const r=EASE_PCT[gid][fit];return{lo:bv*r[0],hi:bv*r[1],say:`내 ${BODY_NAME[garment(gid).main]} ${fmt(bv)}cm의 ${fmt(r[0]*100,0)}~${fmt(r[1]*100,0)}%`}}
+  const r=(gid==="skirt"?EASE_SKIRT:EASE_TOP)[fit];
+  return{lo:bv+r[0],hi:bv+r[1],say:`내 ${BODY_NAME[garment(gid).main]} ${fmt(bv)}cm + 여유 ${r[0]}~${r[1]}cm`};
+}
+function renderRec(){
+  const G=garment(st.garment),note=$("recNote"),key=st.garment+"_"+st.fit,fit=profile.fits[key];
+  const label=`${G.name} ${fName(st.fit)}`,mk=mainKey(),bk=G.main,bv=profile.body[bk];
+  const zs=st.pattern.sizes.filter(z=>z.name&&mainOf(z)>0),want=zs.find(z=>z.name===st.want);
+  $("recBodyL").textContent=`내 ${BODY_NAME[bk]}(cm)`;
+  if(document.activeElement!==$("recBody"))$("recBody").value=bv??"";
+  note.className="fitnote";
+  /* target range for the main measurement */
+  let rng=null,src="";
+  const ft=fit&&fit[mk]!=null?fitTarget(fit,mk):null;
+  if(ft!=null){rng={lo:ft-1,hi:ft+1,say:`저장된 ${label}`};src="fit"}
+  else if(bv>0&&mk===bk){rng=easeRange(st.garment,st.fit,bv);src="ease"}
+  if(!rng){
+    note.innerHTML=`<span>${mk!==bk?`이 사이즈표에는 ${esc(BODY_NAME[bk]||"기준")} 칸이 없어서 추천할 수 없어요.`:`위에 내 ${esc(BODY_NAME[bk])}만 넣으면 <b>${esc(fName(st.fit))}</b> 기준으로 바로 사이즈를 추천해드려요.`} <span class="diff">(${esc(G.hint[st.fit])})</span></span>`;
+    return;
+  }
+  const mid=(rng.lo+rng.hi)/2;
+  const best=zs.reduce((a,b)=>!a||Math.abs(mainOf(b)-mid)<Math.abs(mainOf(a)-mid)?b:a,null);
+  if(!best){note.innerHTML=`<span>사이즈표에 ${esc(COLS[mk]?COLS[mk][0]:"기준")} 값을 넣으면 추천해드려요.</span>`;return}
+  const bm=mainOf(best),inR=bm>=rng.lo-0.01&&bm<=rng.hi+0.01,off=bm<rng.lo?bm-rng.lo:bm-rng.hi;
+  /* compare the other measurements of that size with my body */
+  const rows=[],missing=[];
+  st.pattern.cols.forEach(c=>{if(c.custom||!(mv(best,c.key)>0))return;
+    const b=BODY_OF[c.key];
+    const t=fit&&fit[c.key]!=null?fitTarget(fit,c.key):null;
+    if(t!=null){rows.push([c.name,`${fmt(t)} (저장된 핏)`,mv(best,c.key),mv(best,c.key)-t]);return}
+    if(!b)return;const v=profile.body[b];
+    if(!(v>0)){if(c.key!==mk)missing.push(BODY_NAME[b]);return}
+    rows.push([`${c.name}${b!==c.key?` · 내 ${BODY_NAME[b]}`:""}`,fmt(v),mv(best,c.key),mv(best,c.key)-v]);
+  });
+  note.innerHTML=`<span>${src==="fit"?`저장된 <b>${esc(label)}</b> 기준으로`:`<b>${esc(fName(st.fit))}</b>이면 완성 ${esc(COLS[mk][0])} <b>${fmt(rng.lo)}~${fmt(rng.hi)}cm</b>가 알맞아요 <span class="diff">(${esc(rng.say)})</span>.`}
+      <br><b>${esc(best.name)} 사이즈(${fmt(bm)}cm)</b>가 가장 가까워요${inR?".":` · 알맞은 범위보다 ${fmt(Math.abs(off))}cm ${off>0?"커요":"작아요"}.`}</span>
+    ${rows.length?`<div class="tscroll"><table class="stbl"><thead><tr><th>항목</th><th>내 몸</th><th>${esc(best.name)}</th><th>차이</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td>${r[1]}</td><td>${fmt(r[2])}</td><td class="diff">${sgn(r[3])}</td></tr>`).join("")}</tbody></table></div>
+      <span class="diff">둘레는 차이만큼이 여유예요. 길이는 내 몸보다 길면 넉넉하게 내려와요.</span>`:""}
+    ${missing.length?`<span class="diff">내 치수에 ${[...new Set(missing)].map(esc).join(", ")}도 넣으면 같이 비교해드려요.</span>`:""}
+    <div class="actions">${best.name!==st.want?`<button type="button" class="primary" id="recPick">${esc(best.name)} 고르기</button>`:`<span class="diff">지금 ${esc(best.name)}을 골랐어요.</span>`}
+    ${want?`<button type="button" id="recSave">${esc(want.name)} 치수를 내 ${esc(label)}으로 저장</button>`:""}</div>`;
+  const b=$("recPick");if(b)b.onclick=()=>{st.want=best.name;renderWant();update()};
+  const sv=$("recSave");if(sv)sv.onclick=()=>saveFitFromSize(want,key,label);
+}
+async function saveFitFromSize(z,key,label){
+  const v={},skipped=[];
+  st.pattern.cols.forEach(c=>{
+    if(!COLS[c.key]||c.custom)return;const val=mv(z,c.key);if(!(val>0))return;
+    const b=FIT_BASE[c.key];
+    if(b){const bv=profile.body[b];if(!(bv>0)){skipped.push(c.key);return}v[c.key]=Math.round((val-bv)*10)/10}
+    else v[c.key]=val;
+  });
+  if(!Object.keys(v).length){if(skipped.length)openProfile("body",FIT_BASE[skipped[0]],`핏을 저장하려면 몸 ${BODY_NAME[FIT_BASE[skipped[0]]]}가 필요해요`);return}
+  profile.fits[key]=v;refreshAll();
+  const where=await commitProfile();
+  flash(`${label} 저장 · ${where==="account"?"내 계정":"이 기기"}${skipped.length?` · ${skipped.map(k=>COLS[k][0]).join(", ")}은 몸 치수가 없어 뺐어요`:""}`);
+}
+
+/* ---------- step 2 gauge + step 5 answer ---------- */
+const lvlOf=err=>Math.abs(err)<=2?"ok":Math.abs(err)<=4?"warn":"bad";
+const pill=(err,range)=>`<span class="pill ${lvlOf(range?Math.max(Math.abs(range[0]),Math.abs(range[1])):err)}">${range?`${sgn(range[0])}~${sgn(range[1])}`:sgn(err)}cm</span>`;
+function currentGauge(){
+  const me=myGauge(),y=st.myYarn;
+  const eS=myEstimate(y,st.strand,"s",st.needle),eR=myEstimate(y,st.strand,"r",st.needle);
+  if(me)return{src:"me",s:me.s,r:me.r??(eR.level!=="bad"?eR.v:null),eS,eR,me};
+  if(sameMode()){const a=sameYarnAt(st.needle,"s"),b=sameYarnAt(st.needle,"r");
+    if(a.level==="bad")return{src:"none",eS:a,eR:b};
+    return{src:"est",s:a.v,r:b.level!=="bad"?b.v:null,rs:a.level==="warn"?[a.lo,a.hi]:null,rr:b.level==="warn"?[b.lo,b.hi]:null,eS:a,eR:b};}
+  if(y.mode==="combo"&&!strandsOf(y).length){
+    const c=comboAt(st.needle);if(c.bad)return{src:"none",eS:{kind:"combo",msg:c.bad},eR};
+    return{src:"combo",s:c.v,r:c.ratio?c.v*c.ratio:null,rs:[c.lo,c.hi],rr:c.ratio?[c.lo*c.ratio,c.hi*c.ratio]:null,c,eS,eR};
+  }
+  if(eS.level==="bad")return{src:"none",eS,eR};
+  return{src:"est",s:eS.v,r:eR.level!=="bad"?eR.v:null,rs:eS.level==="warn"?[eS.lo,eS.hi]:null,rr:eR.level==="warn"?[eR.lo,eR.hi]:null,eS,eR};
+}
+function renderGauge(C){
+  const out=$("gaugeOut"),{eS,eR}=C;
+  if(C.src==="me"){
+    out.className="result me";
+    out.innerHTML=`<span class="badge">✓ 내 실제 게이지 사용 중</span>
+      <div class="big">${fmt(C.s)}코 × ${C.r?fmt(C.r)+"단":"—"} <small>/ 10cm</small></div>
+      <p class="hint">${eS.v?`추정값은 ${fmt(eS.v)}코였어요. `:""}${C.me.r?"":C.r?"단은 추정값을 쓰고 있어요.":""}</p>`;
+  }else if(C.src==="combo"){
+    const c=C.c;out.className="result warn";
+    out.innerHTML=`<span class="badge">△ 합사 어림값 · 시작용</span>
+      <div class="big">${fmt(C.rs[0])}~${fmt(C.rs[1])}코${C.rr?` × ${fmt(C.rr[0])}~${fmt(C.rr[1])}단`:""} <small>/ 10cm</small></div>
+      <p class="hint">합사 짐작값이라 오차가 커요. 조금 떠서 코와 단을 세어 넣으면 정확해져요.</p>`;
+  }else if(C.src==="none"){
+    out.className="result bad";
+    out.innerHTML=`<span class="badge">계산하지 않아요</span><p class="hint" style="color:inherit">${
+      eS.kind==="same"?"도안 게이지(코 수)를 넣으면 내 손땀으로 계산해드려요.":eS.kind==="combo"?eS.msg:eS.kind==="far1"?`게이지가 하나뿐이라 그 바늘에서 0.5mm 안쪽까지만 어림해요. 다른 바늘의 게이지를 하나 더 넣어주세요.`:eS.kind==="few"?`첫 단계에 ${st.strand}합 게이지를 넣어주세요. 바늘 굵기가 다른 게이지가 2개 이상이면 가장 정확해요.`:
+      `판매처 게이지 범위에서 ${fmt(eS.dist,2)}mm 떨어져 있어요. 0.5mm보다 멀면 오차가 커서 숫자를 드리지 않아요. 10cm쯤 떠서 "내 게이지로 수정하기"로 재주세요.`}</p>`;
+  }else{
+    const warn=eS.level==="warn";
+    out.className="result "+(warn?"warn":"ok");
+    const H=handInfo(),hl=H.h!=="even"&&!eS.measured?` · ${H.label} 보정`:"";
+    const label=(eS.kind==="same"?"도안 게이지 기준":eS.kind==="exact"?"게이지 그대로":eS.kind==="interp"?"두 게이지 사이 계산 (보간)":eS.kind==="one"?`게이지 하나로 ${fmt(eS.dist,2)}mm 어림`:`범위 밖 ${fmt(eS.dist,2)}mm 추정 (외삽)`)+hl;
+    out.innerHTML=`<span class="badge">${warn?"△":"●"} ${label}</span>
+      <div class="big">${warn?`${fmt(eS.lo)}~${fmt(eS.hi)}`:fmt(C.s)}코 × ${C.r?(C.rr?`${fmt(eR.lo)}~${fmt(eR.hi)}`:fmt(C.r))+"단":"—"} <small>/ 10cm</small></div>
+      <p class="hint">${st.myYarn.gauges.some(g=>g.me&&g.k===st.strand&&Math.abs(g.n-st.needle)<1e-9)?"내가 떠서 잰 값이에요.":eS.kind==="same"?`원작실 그대로 · ${handInfo().label} · ${handLine()}`:H.h!=="even"?`판매처 게이지에 내 손(${H.label})을 반영한 예상값이에요.`:warn?"게이지가 있는 바늘에서 벗어나서 범위로 보여드려요.":"판매처 게이지 기준 예상값이에요."}</p>`;
+  }
+}
+/* the needle the yarn is "meant" for: middle of its recommended range, else the middle gauge row */
+function refNeedle(y){
+  const gs=(y.gauges||[]).filter(g=>g.n>0&&g.s>0&&(g.k||1)===baseK(y)).map(g=>g.n).sort((a,b)=>a-b);
+  if(y.needleMin>0){const mid=y.needleMax>0?(y.needleMin+y.needleMax)/2:y.needleMin;
+    if(!gs.length)return snapNeedle(mid);return gs.reduce((a,b)=>Math.abs(b-mid)<Math.abs(a-mid)?b:a)}
+  return gs.length?gs[Math.floor((gs.length-1)/2)]:null;
+}
+let lastAns=null;
+/* 코 수·단 수 계산: uses the gauge I'm actually knitting at */
+const CNT_MODES=[["pat","도안 숫자 바꾸기"],["cm","cm → 코·단"],["st","코·단 → cm"]];
+function countGauge(C){
+  if(C.src==="me")return{s:C.s,r:C.r,n:st.needle,why:"내가 잰 게이지"};
+  if(!st.needleSet&&lastAns&&lastAns.my)return{s:lastAns.my.s,r:lastAns.my.r,n:lastAns.N,why:"도안 바늘 예상값"};
+  if(C.src!=="none"&&C.s)return{s:C.s,r:C.r,n:st.needle,why:"예상값"};
+  return null;
+}
+function renderCount(C){
+  const g=countGauge(C),m=st.cnt.m,v=st.cnt[m],pg=patternGauge();
+  chips($("cntSeg"),CNT_MODES,m,k=>{st.cnt.m=k;["A","B"].forEach((x,i)=>$("cnt"+x).value=st.cnt[k][i?"b":"a"]);update()});
+  const L={pat:["도안 코 수","도안 단 수"],cm:["가로 (cm)","세로 (cm)"],st:["코 수","단 수"]}[m];
+  $("cntLa").textContent=L[0];$("cntLb").textContent=L[1];
+  ["A","B"].forEach((x,i)=>{const el=$("cnt"+x);if(document.activeElement!==el)el.value=v[i?"b":"a"]??""});
+  const out=$("cntOut");
+  if(!g){$("cntBase").textContent="내 게이지를 알 수 없어서 계산할 수 없어요. 1단계에서 실 게이지를 넣거나 위에서 직접 재서 넣어주세요.";out.hidden=true;return}
+  $("cntBase").innerHTML=`내 게이지 <b>${fmt(g.s)}코${g.r?` × ${fmt(g.r)}단`:""}</b> / 10cm · ${g.n?mmTxt(g.n)+" · ":""}${g.why}<br>1cm에 <b>${fmt(g.s/10,2)}코</b>${g.r?` · <b>${fmt(g.r/10,2)}단</b>`:""}`;
+  const a=num(v.a),b=num(v.b),res=[];
+  if(m==="pat"){
+    if(!(pg.s>0)){out.hidden=false;out.className="result bad";out.innerHTML=`<p class="hint" style="color:inherit">도안 게이지를 알아야 바꿀 수 있어요. 2단계에서 넣어주세요.</p>`;return}
+    if(a>0)res.push(`도안 ${fmt(a,0)}코 → <b>${Math.round(a*g.s/pg.s)}코</b>`);
+    if(b>0)res.push(pg.r>0&&g.r?`도안 ${fmt(b,0)}단 → <b>${Math.round(b*g.r/pg.r)}단</b>`:`단 수는 도안이나 내 단 게이지가 없어서 바꿀 수 없어요`);
+    if(res.length)res.push(`<span class="diff">도안 ${fmt(pg.s)}코${pg.r?` × ${fmt(pg.r)}단`:""} 기준이에요. 무늬 반복이 있으면 1~2코 맞춰 조절하세요.</span>`);
+  }else if(m==="cm"){
+    if(a>0)res.push(`가로 ${fmt(a)}cm → <b>${Math.round(a*g.s/10)}코</b>`);
+    if(b>0)res.push(g.r?`세로 ${fmt(b)}cm → <b>${Math.round(b*g.r/10)}단</b>`:`단 게이지가 없어서 단 수는 계산할 수 없어요`);
+  }else{
+    if(a>0)res.push(`${fmt(a,0)}코 → <b>${fmt(a*10/g.s)}cm</b>`);
+    if(b>0)res.push(g.r?`${fmt(b,0)}단 → <b>${fmt(b*10/g.r)}cm</b>`:`단 게이지가 없어서 길이는 계산할 수 없어요`);
+  }
+  out.hidden=!res.length;out.className="result ok";out.innerHTML=res.map(x=>`<p style="margin:0">${x}</p>`).join("");
+}
+const plain=h=>{const t=document.createElement("div");t.innerHTML=String(h||"");return t.textContent.replace(/\s+/g," ").trim()};
+function renderAnswer(C){
+  const box=$("answer"),P=st.pattern,pg=patternGauge(),patS=pg.s,patR=pg.r;
+  lastAns=null;
+  const mk=mainKey(),mc=mainCol();
+  const zs=P.sizes.filter(z=>z.name&&mainOf(z)>0),want=zs.find(z=>z.name===st.want);
+  const ask=(msg,n)=>{box.innerHTML=`<div class="reco bad"><span class="otag">하나만 더 필요해요</span><p class="rhead">${msg}</p><button type="button" class="primary" id="goFix">채우러 가기</button></div>`;$("goFix").onclick=()=>goStep(n)};
+  if(!(patS>0)){ask(st.origMode==="together"?"합사 도안은 도안에 적힌 합사 게이지를 넣어주세요":st.origYarns.some(o=>o.gauges.some(g=>g.s>0))?"원작실 게이지에 바늘 굵기도 같이 넣어주세요":"도안 게이지나 원작실 게이지를 넣어주세요",2);return}
+  if(!mc||!zs.length){ask("사이즈표에 사이즈별 실측을 넣어주세요",3);return}
+  if(!want){ask("입고 싶은 사이즈를 골라주세요",4);return}
+  const T=mainOf(want),y=st.myYarn,combo=y.mode==="combo",sameY=sameMode(),po=pickedOrig();
+  const cols=P.cols.filter(c=>mv(want,c.key)>0),wCols=cols.filter(c=>c.dir==="s"),rCols=cols.filter(c=>c.dir==="r");
+  const yn=sameY?yLabel(po||st.origYarns.find(o=>o.name.trim())||{}):(yLabel(y)||(combo?comboName():""));
+  const myName=sameY?`${yn?esc(yn):"원작실"} (내 손땀)`:yn?esc(yn):"내 실";
+  const myWord=sameY?"내 손땀으로":"내 실로";
+  const ks=strandsOf(y),k0=ks[0]||1;
+
+  /* ---- the needle the pattern is knit on ---- */
+  const hasG=o=>o&&o.gauges.some(g=>g.s>0&&g.n>0);
+  const firstOrig=sameY&&hasG(po)?po:st.origYarns.find(hasG);
+  const N=P.n>0?P.n:(pg.atN||(firstOrig&&refNeedle(firstOrig))||null);
+
+  /* ---- my yarn at that needle ---- */
+  let my=null;
+  if(C.src==="me")my={s:C.s,r:C.r,src:"me",n:st.needle};
+  else if(N){
+    if(sameY){const e=sameYarnAt(N,"s"),er=sameYarnAt(N,"r");
+      if(e.level!=="bad")my={s:e.v,r:er.level!=="bad"?er.v:null,src:"same",n:N}}
+    else if(combo&&!ks.length){const c=comboAt(N);if(!c.bad)my={s:c.v,r:c.ratio?c.v*c.ratio:null,lo:c.lo,hi:c.hi,src:"combo",n:N}}
+    else{const e=myEstimateFar(y,k0,"s",N),er=myEstimateFar(y,k0,"r",N);
+      if(e.level!=="bad")my={s:e.v,r:er.level!=="bad"?er.v:null,lo:e.lo,hi:e.hi,src:"est",n:N,warn:e.level==="warn",far:e.level==="far"?e:null}}
+  }
+  const rg=my&&my.lo!=null&&my.hi!=null&&my.lo!==my.hi?[my.lo,my.hi]:null;
+
+  function calc(z,c,s,r,sr){
+    const src=mv(z,c.key);if(!(src>0))return null;
+    if(c.dir==="s")return{v:src*patS/s,rg:sr?[src*patS/sr[1],src*patS/sr[0]]:null};
+    if(patR>0&&r>0)return{v:src*patR/r};
+    return null;
+  }
+  const cmTxt=x=>x.rg?`${fmt(x.rg[0])}~<wbr>${fmt(x.rg[1])}`:fmt(x.v);
+  const html=[];
+
+  /* notes that change how far to trust everything */
+  const notes=[];
+  if(false)notes.push(`<b>도안 게이지가 무늬 기준이에요.</b> 판매처 게이지는 메리야스 기준이라 크게 틀릴 수 있어요. 무늬로 떠서 1단계 "내 손땀 › 내 기록으로"에 넣어주세요.`);
+  if(P.wash==="after"&&C.src!=="me"&&!sameY)notes.push(`도안 게이지는 <b>세탁 후</b> 기준이에요. 판매처 게이지는 세탁 전 값인 경우가 많아서 완성 후 치수가 조금 달라질 수 있어요.`);
+  const farBits=[];
+  if(my&&my.far)farBits.push(`내 실은 ${mmTxt(my.far.from)} 게이지만 있어서, 도안 바늘 ${mmTxt(N)} 값은 <b>${fmt(my.far.dist,2)}mm 떨어진 바늘에서 짐작</b>했어요`);
+  if(pg.far)farBits.push(`원작실은 ${mmTxt(pg.far.from)} 게이지만 있어서, ${mmTxt(pg.atN)} 값은 <b>${fmt(pg.far.dist,2)}mm 떨어진 바늘에서 짐작</b>했어요`);
+  else if(!sameY&&firstOrig&&N&&pg.src==="pattern"){const oF=farEstimate(pts(firstOrig,baseK(firstOrig),"s"),N);if(oF.level==="far")farBits.push(`원작실 비교도 ${mmTxt(oF.from)} 게이지에서 짐작한 값이에요`)}
+  if(farBits.length)notes.unshift(`<b>⚠ 예상치예요. 무조건 믿지 마세요.</b> ${farBits.join(". ")}. 바늘 차이가 클수록 오차가 커서 숫자를 범위로 보여드려요. 꼭 ${mmTxt(N)}로 떠서 코와 단을 세어 1단계 "내 손땀 › 내 기록으로"에 넣어주세요.`);
+  if(notes.length)html.push(`<div class="info warnbox">${notes.map(n=>`<span>${n}</span>`).join("")}</div>`);
+
+  if(!my){
+    html.push(`<div class="reco bad"><span class="otag">내 실 게이지가 필요해요</span>
+      <p class="rhead">${N?`도안 바늘 ${mmTxt(N)}에서 ${myName}의 게이지를 알 수 없어요`:"도안 바늘을 알 수 없어요"}</p>
+      <p class="hint">${N?`${myName}의 판매처 게이지를 하나 이상 넣어주세요. 바늘이 ${FAR_MAX}mm 넘게 떨어져 있으면 짐작이 어려워요. ${mmTxt(N)}로 떠서 1단계 "내 손땀 › 내 기록으로"에 넣어도 돼요.`:"도안 단계에 도안 바늘을 넣어주세요."}</p></div>`);
+    box.innerHTML=html.join("");return;
+  }
+  const H=handInfo();
+
+  /* ===== 1. yarn vs yarn at the pattern needle ===== */
+  const ratio=patS/my.s;                       // >1: my stitches are bigger → garment grows
+  const pct=(ratio-1)*100,same=Math.abs(pct)<2;
+  const oG=firstOrig?farEstimate(pts(firstOrig,baseK(firstOrig),"s"),N):null;
+  const oR=firstOrig?farEstimate(pts(firstOrig,baseK(firstOrig),"r"),N):null;
+  const rows=[];
+  if(pg.src==="pattern")rows.push([`도안 게이지`,`${fmt(patS)}코${patR?` × ${fmt(patR)}단`:""}`]);
+  if(firstOrig&&oG&&oG.level!=="bad")rows.push([`원작실 · ${esc(yLabel(firstOrig)||"이름 없음")}`,`${fmt(oG.v)}코${oR&&oR.level!=="bad"?` × ${fmt(oR.v)}단`:""}`,pg.src==="pattern"&&Math.abs(oG.v/patS-1)>=0.03?`판매처 기준으로는 도안보다 ${oG.v<patS?"성기게":"촘촘하게"} 나와요`:""]);
+  rows.push([`<b>${sameY?"내가 뜨면":"내 실"} · ${myName}</b>`,`<b>${rg?`${fmt(rg[0])}~${fmt(rg[1])}`:fmt(my.s)}코${my.r?` × ${fmt(my.r)}단`:""}</b>`,my.src==="me"?"내가 잰 값":my.src==="combo"?"합사 짐작값":my.src==="same"?`${H.label} 기준`:H.h!=="even"?`${H.label} 반영`:""]);
+  const p1o=!sameY&&firstOrig&&per100(firstOrig),p1m=!combo&&!sameY&&per100(y);
+  const thick=p1o&&p1m?`<p class="hint">100g당 길이: 원작실 ${fmt(p1o,0)}m · 내 실 ${fmt(p1m,0)}m → 내 실이 ${Math.abs(p1m/p1o-1)<0.05?"비슷한 굵기예요":p1m>p1o?"더 가는 실이에요":"더 굵은 실이에요"}</p>`:"";
+  const sameNote=sameY?`<p class="hint">원작실 그대로 떠요. 도안 게이지를 기준으로 내 손땀(${esc(H.label)})만 반영했어요.${firstOrig&&pg.src==="pattern"&&oG&&oG.level!=="bad"&&Math.abs(oG.v/patS-1)>=0.03?` 고른 원작실은 판매처 기준 ${fmt(oG.v)}코라 도안과 조금 달라요. 디자이너가 이 실로 낸 도안 게이지를 더 믿었어요.`:""}</p>`:"";
+  const cmpHtml=`<div class="opt cmp"><span class="otag">${sameY?"도안과 내 손땀":"원작실과 내 실"} · 도안 바늘 ${mmTxt(N)} 기준 · 10cm당</span>
+    <div class="tscroll"><table class="stbl"><tbody>${rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="diff">${r[2]||""}</td></tr>`).join("")}</tbody></table></div>
+    ${sameNote}
+    <p class="rhead sm">${same?`${myWord} 도안대로 뜨면 <b>거의 같은 크기</b>로 나와요`:`${sameY?"내 손땀으로는":"내 실은"} 코가 ${pct>0?"더 커서":"더 작아서"}, 도안대로 뜨면 옷이 약 <b>${fmt(Math.abs(pct),0)}% ${pct>0?"커져요":"작아져요"}</b>`}</p>
+    ${patR>0&&my.r&&Math.abs(patR/my.r-1)>=0.03?`<p class="hint">단도 ${patR/my.r>1?"커서":"작아서"} 도안 단 수대로 뜨면 길이가 약 ${fmt(Math.abs(patR/my.r-1)*100,0)}% ${patR/my.r>1?"길어져요":"짧아져요"}.</p>`:""}
+    ${thick}</div>`;
+
+  /* ===== 2. the size I want, knit as written ===== */
+  const wantRows=cols.map(c=>{const t=mv(want,c.key),x=calc(want,c,my.s,my.r,rg);
+    const lab=`${esc(c.name)}${c.dir==="r"?'<span class="dir">세로</span>':""}`;
+    if(!x)return`<tr><td>${lab}</td><td>${fmt(t)}</td><td colspan="2" class="diff">단 게이지가 없어 계산 못 해요</td></tr>`;
+    return`<tr class="${c.key===mk?"on":""}"><td>${lab}</td><td>${fmt(t)}</td><td>${cmTxt(x)}</td><td>${pill(x.v-t,x.rg&&[x.rg[0]-t,x.rg[1]-t])}</td></tr>`}).join("");
+  const mW=calc(want,mc,my.s,my.r,rg);
+  const wantHtml=`<div class="opt"><span class="otag">${esc(want.name)} 사이즈를 ${myWord} 도안대로 뜨면</span>
+    <p class="rhead sm">${esc(mc.name)} <b>${cmTxt(mW)}cm</b> · ${esc(want.name)} 실측 ${fmt(T)}cm${Math.abs(mW.v-T)<1?"와 거의 같아요":`보다 <b>${fmt(Math.abs(mW.v-T))}cm ${mW.v>T?"커요":"작아요"}</b>`}</p>
+    <div class="tscroll"><table class="stbl"><thead><tr><th>항목</th><th>도안 ${esc(want.name)}</th><th>${sameY?"내 손땀으로":"내 실로"}</th><th>차이</th></tr></thead><tbody>${wantRows}</tbody></table></div></div>`;
+
+  /* ===== 3. so which size to knit to wear the one I want ===== */
+  const sizeRows=zs.map(z=>{const x=calc(z,mc,my.s,my.r,rg);return{z,x,err:Math.abs(x.v-T)}});
+  const best=sizeRows.reduce((a,b)=>b.err<a.err?b:a);
+  const swap=best.z!==want,lvl0=lvlOf(best.err),lvl=(my.far||pg.far)&&lvl0==="ok"?"warn":lvl0;
+  const steps=[];
+  if(swap){
+    steps.push(`코 잡기와 가로(${wCols.map(c=>esc(c.name)).join("·")||"둘레"})는 도안의 <b>${esc(best.z.name)} 사이즈</b> 숫자를 따라요.`);
+    if(rCols.length)steps.push(`길이는 단 수 말고 <b>${esc(want.name)} 실측까지 cm로 재면서</b> 떠요: ${rCols.map(c=>`${esc(c.name)} ${fmt(mv(want,c.key))}cm`).join(" · ")}`);
+    steps.push(`<span class="warnc">진동 깊이와 목 파임은 ${esc(best.z.name)} 기준이라 ${esc(want.name)}보다 조금 ${mainOf(best.z)<T?"작아요":"커요"}.</span>`);
+  }else if(rCols.length&&patR>0&&my.r&&Math.abs(patR/my.r-1)>=0.03)
+    steps.push(`길이는 단 수 말고 cm로 재면서 떠요: ${rCols.map(c=>`${esc(c.name)} ${fmt(mv(want,c.key))}cm`).join(" · ")}`);
+  if(my.src!=="me")steps.push(`조금 뜬 뒤 코와 단을 세어 1단계 "내 손땀 › 내 기록으로"에 넣으면 확실해져요. <button type="button" class="link" data-go="measure">재러 가기</button>`);
+  const headline=best.err>4
+    ?`도안 바늘로는 어느 사이즈를 떠도 ${esc(want.name)} 크기가 안 나와요`
+    :swap?`${esc(want.name)} 사이즈를 입으려면 <b>${esc(best.z.name)} 사이즈</b>를 뜨세요`:`<b>${esc(want.name)} 사이즈 그대로</b> 뜨면 돼요`;
+  const rsum=best.err<=4?`${esc(best.z.name)} 사이즈를 ${myWord} 뜨면 ${esc(mc.name)} ${cmTxt(best.x)}cm · 목표 ${fmt(T)}cm${my.far||pg.far?" · 짐작한 값이라 꼭 떠서 확인하세요":""}`:`가장 가까운 ${esc(best.z.name)} 사이즈도 ${esc(mc.name)} ${cmTxt(best.x)}cm라 ${fmt(best.err)}cm 차이가 나요.`;
+  html.push(`<div class="reco ${best.err>4?"bad":lvl}"><span class="otag">그래서 · 도안 바늘 ${mmTxt(N)} 그대로${sameY?` · 원작실 그대로 · ${esc(H.label)}`:H.h!=="even"&&my.src!=="me"?` · ${esc(H.label)}`:""}</span>
+    <p class="rhead">${headline}</p>
+    <p class="rsum">${rsum}</p>
+    ${steps.length?`<ol class="rsteps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol>`:""}</div>`);
+  const sizeHtml=`<div class="opt"><span class="otag">사이즈별로 ${myWord} 뜨면 · ${esc(mc.name)}</span>
+    <div class="tscroll"><table class="stbl ztbl"><thead><tr><th>도안 사이즈</th><th>실측</th><th>${sameY?"내 손땀으로":"내 실로"} 뜨면</th><th>${esc(want.name)} 대비</th></tr></thead><tbody>
+    ${sizeRows.map(r=>`<tr class="${r===best?"on":""}"><td>${esc(r.z.name)}${r.z===want?'<span class="dir">입을 사이즈</span>':""}</td><td>${fmt(mainOf(r.z))}</td><td>${cmTxt(r.x)}</td><td>${pill(r.x.v-T,r.x.rg&&[r.x.rg[0]-T,r.x.rg[1]-T])}</td></tr>`).join("")}
+    </tbody></table></div></div>`;
+
+  /* ===== other ways, kept small ===== */
+  const alt=[];
+  if(sameY&&C.src!=="me"){let b=null;
+    for(const nn of OWN_N){const e=sameYarnAt(nn,"s");if(e.level==="bad")continue;
+      const v=T*patS/e.v,sc=Math.abs(v-T)+(e.level==="warn"?0.5:0)+Math.abs(nn-N)*0.1+(isSpecialN(nn)?1.5:0);if(!b||sc<b.sc)b={n:nn,v,sc}}
+    if(b&&Math.abs(b.v-T)<=3&&Math.abs(b.n-N)>=0.25)alt.push(`<li><b>${mmTxt(b.n)}</b> 바늘${isSpecialN(b.n)?" (얇은 특수 바늘)":""}로 ${esc(want.name)} 그대로 뜨면 ${esc(mc.name)} 약 ${fmt(b.v)}cm</li>`);
+  }
+  if(!combo&&!sameY&&C.src!=="me"){
+    ks.forEach(k=>{let b=null;
+      for(const nn of OWN_N){const e=myEstimate(y,k,"s",nn);if(e.level==="bad")continue;
+        const v=T*patS/e.v,sc=Math.abs(v-T)+(e.level==="warn"?0.5:0)+Math.abs(nn-N)*0.1+(isSpecialN(nn)?1.5:0);if(!b||sc<b.sc)b={n:nn,v,sc,e}}
+      if(b&&Math.abs(b.v-T)<=3&&(k!==k0||Math.abs(b.n-N)>=0.25)){
+        const fit=k===k0?needleFit(y.needleMin,y.needleMax,b.n):null;
+        alt.push(`<li>${k!==k0?`<b>${k}합</b>으로 `:""}<b>${mmTxt(b.n)}</b> 바늘${isSpecialN(b.n)?" (얇은 특수 바늘)":""}로 ${esc(want.name)} 그대로 뜨면 ${esc(mc.name)} 약 ${fmt(b.v)}cm${fit?` <span class="warnc">· ${fit}</span>`:""}</li>`)}
+    });
+  }
+  const altHtml=alt.length?`<div class="opt"><span class="otag">바늘이나 합 수를 바꿔도 된다면</span><ul class="rsteps">${alt.join("")}</ul></div>`:"";
+
+  html.push(`<div class="copyrow"><button type="button" id="ansCopy">결과 복사하기</button><span class="ystate" id="ansCopyMsg" role="status"></span></div>
+    <textarea id="ansCopyText" rows="6" hidden aria-label="복사할 결과"></textarea>`);
+  html.push(`<h3 class="morehead">자세히 보기</h3>${cmpHtml}${sizeHtml}${wantHtml}${altHtml}`);
+  html.push(`<div class="disclaim" role="note"><b>계산은 참고용이에요</b>
+    <span>같은 굵기라도 실의 소재(울·면·알파카 등), 꼬임, 털 날림에 따라, 그리고 손땀과 세탁에 따라 실제 게이지는 달라질 수 있어요. 100% 믿기보다는 조금 떠서 코와 단을 세어 한 번 확인해주세요.</span></div>`);
+  box.innerHTML=html.join("");
+  box.querySelectorAll('[data-go="measure"]').forEach(b=>b.onclick=goMeasure);
+
+  /* plain-text summary for memo apps and chats */
+  const lines=[`[단디] ${st.name.trim()||garment(st.garment).name}`,plain(headline),
+    `· 도안 바늘 ${mmTxt(N)} · ${sameY?`원작실 그대로${yn?` (${yn})`:""}`:plain(myName)} · ${my.src==="me"?"내가 잰 게이지":H.label}`,`· ${plain(rsum)}`];
+  steps.forEach((x,i)=>lines.push(`${i+1}. ${plain(x)}`));
+  alt.forEach(x=>lines.push(`· 다른 방법: ${plain(x)}`));
+  if(my.src!=="me")lines.push("※ 예상값이에요. 조금 떠서 게이지를 확인하세요.");
+  lastAns={my,N,text:lines.join("\n")};
+  $("ansCopy").onclick=async()=>{
+    const t=lastAns.text,ta=$("ansCopyText");
+    try{await navigator.clipboard.writeText(t);$("ansCopyMsg").textContent="복사했어요. 메모나 카톡에 붙여넣으면 돼요.";ta.hidden=true}
+    catch(e){ta.hidden=false;ta.value=t;ta.focus();ta.select();$("ansCopyMsg").textContent="아래 글자를 길게 눌러 복사하세요."}
+  };
+}
+
+let answerOpen=false;
+const MEASURE_TIP="고무단은 오므라들어서 피하고 <b>메리야스 부분</b>에서 10cm 안의 코와 단을 세요.";
+function needleFit(min,max,n){
+  if(!(min>0))return null;const hi=max>0?max:min;
+  if(n<min-0.25)return`이 실의 권장 바늘(${fmt(min,2)}${max>0?`~${fmt(max,2)}`:""}mm)보다 얇아서 편물이 뻣뻣해질 수 있어요.`;
+  if(n>hi+0.25)return`이 실의 권장 바늘(${fmt(min,2)}${max>0?`~${fmt(max,2)}`:""}mm)보다 굵어서 편물이 성기고 비칠 수 있어요.`;
+  return null;
+}
+
+/* ---------- hand tension ---------- */
+const HANDS=[["even","평손","판매처 게이지와 비슷하게 떠요"],["tight","쫀손","보통보다 촘촘하게 떠요"],["loose","널손","보통보다 느슨하게 떠요"],["auto","내 기록으로","내가 잰 게이지로 판매처와 차이를 계산해요"]];
+function handRatio(){
+  const ys=[...yarnLib.filter(l=>!l.parts)];
+  if(st.myYarn.mode!=="combo"&&st.myYarn.name.trim()&&!ys.some(l=>l.name===st.myYarn.name))ys.push(st.myYarn);
+  const rs=[];
+  ys.forEach(y=>{(y.gauges||[]).filter(g=>g.me&&g.s>0&&g.n>0).forEach(g=>{
+    const sp=(y.gauges||[]).filter(x=>!x.me&&x.k===g.k&&x.s>0&&x.n>0).map(x=>({n:x.n,v:x.s}));
+    const e=estimate(sp,g.n);if(e.level!=="bad")rs.push(g.s/e.v)})});
+  return{n:rs.length,r:rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:1};
+}
+function handInfo(){
+  const h=profile.hand||"even";
+  if(h==="tight")return{h,off:-0.5,ratio:1,label:"쫀손"};
+  if(h==="loose")return{h,off:0.5,ratio:1,label:"널손"};
+  if(h==="auto"){const a=handRatio();return{h,off:0,ratio:a.r,n:a.n,label:a.n?`내 기록 ${a.n}개`:"내 기록(아직 없음)"}}
+  return{h:"even",off:0,ratio:1,label:"평손"};
+}
+/* "원작실 그대로": start from the pattern's own gauge (the designer got it with these yarns);
+   only my hand, or a different needle, moves it. Slope from the chosen yarn's seller gauges when it has them. */
+function sameYarnAt(n,f){
+  const pg=patternGauge(),base=f==="s"?pg.s:pg.r;if(!(base>0)||!(n>0))return{level:"bad",kind:"same"};
+  const hit=st.myYarn.gauges.find(g=>g.me&&g.k===1&&Math.abs(g.n-n)<1e-9&&g[f]>0);
+  if(hit)return{level:"ok",kind:"exact",v:hit[f],measured:true};
+  const o=pickedOrig(),N0=st.pattern.n>0?st.pattern.n:(pg.atN||(o&&refNeedle(o))||null),H=handInfo();
+  let fac=1,level="ok";
+  if(N0){const to=n+H.off;
+    if(Math.abs(to-N0)>1e-9){
+      const pt=o?pts(o,baseK(o),f):[],a=pt.length?farEstimate(pt,to):null,b=pt.length?farEstimate(pt,N0):null;
+      if(a&&b&&a.level!=="bad"&&b.level!=="bad"){fac=a.v/b.v;if(a.level==="far"||b.level==="far"||Math.abs(n-N0)>0.5)level="warn"}
+      else{fac=Math.pow(N0/to,0.9);if(Math.abs(n-N0)>0.5)level="warn"}}}
+  else if(Math.abs(H.off)>0)fac=Math.pow(4/(4+H.off),0.9);
+  const v=base*fac*H.ratio;
+  return{level,kind:"same",v,lo:level==="warn"?v*0.95:undefined,hi:level==="warn"?v*1.05:undefined,n0:N0};
+}
+/* my gauge from a yarn: measured rows win; seller rows get my hand adjustment */
+/* best guess well away from any known needle: stitches shrink roughly with needle size to a power.
+   Two or more known needles give this yarn's own power; otherwise a typical 0.7–1.1. Wide range on purpose. */
+const FAR_MAX=3;
+function farEstimate(points,n){
+  const e=estimate(points,n);if(e.level!=="bad")return e;
+  const p=points.filter(x=>x.n>0&&x.v>0).sort((a,b)=>Math.abs(a.n-n)-Math.abs(b.n-n));if(!p.length)return e;
+  const a=p[0],dist=Math.abs(a.n-n);if(dist>FAR_MAX)return{level:"bad",kind:"toofar",dist};
+  let lo=0.7,hi=1.1;
+  if(p.length>1){const b=p.find(x=>x.n!==a.n);if(b){let al=Math.log(b.v/a.v)/Math.log(a.n/b.n);
+    if(isFinite(al)){al=Math.min(1.4,Math.max(0.5,al));lo=al-0.2;hi=al+0.2}}}
+  const v1=a.v*Math.pow(a.n/n,lo),v2=a.v*Math.pow(a.n/n,hi);
+  return{level:"far",kind:"far",v:Math.sqrt(v1*v2),lo:Math.min(v1,v2),hi:Math.max(v1,v2),dist,from:a.n};
+}
+function myEstimateFar(y,k,f,n){
+  const e=myEstimate(y,k,f,n);if(e.level!=="bad")return e;
+  const rows=y.gauges.filter(g=>g.k===k&&g.n>0&&g[f]>0);if(!rows.length)return e;
+  const H=handInfo(),r=farEstimate(rows.map(g=>({n:g.n,v:g[f]})),n+(rows.some(g=>!g.me)?H.off:0));
+  if(r.level==="bad"||H.ratio===1)return r;
+  return Object.assign({},r,{v:r.v*H.ratio,lo:r.lo*H.ratio,hi:r.hi*H.ratio});
+}
+function myEstimate(y,k,f,n){
+  const rows=y.gauges.filter(g=>g.k===k&&g.n>0&&g[f]>0),me=rows.filter(g=>g.me),sel=rows.filter(g=>!g.me);
+  const hit=me.find(g=>Math.abs(g.n-n)<1e-9);if(hit)return{level:"ok",kind:"exact",v:hit[f],measured:true};
+  if(!sel.length)return estimate(me.map(g=>({n:g.n,v:g[f]})),n);
+  const H=handInfo(),e=estimate(sel.map(g=>({n:g.n,v:g[f]})),n+H.off);
+  if(e.level==="bad"||H.ratio===1)return e;
+  return Object.assign({},e,{v:e.v*H.ratio,lo:e.lo!=null?e.lo*H.ratio:undefined,hi:e.hi!=null?e.hi*H.ratio:undefined});
+}
+
+function update(){
+  /* until the user picks a needle, "지금 바늘" is the yarn's own needle */
+  if(!st.needleSet){let r=null;
+    if(sameMode()){const o=pickedOrig()||st.origYarns.find(x=>x.gauges.some(g=>g.s>0&&g.n>0));r=st.pattern.n>0?st.pattern.n:o?refNeedle(o):null}
+    else if(st.myYarn.mode==="combo"&&!strandsOf(st.myYarn).length){const c=comboEstimate();if(!c.bad)r=c.nRef}else r=refNeedle(st.myYarn);
+    if(r&&r!==st.needle){st.needle=r;const ks=strandsOf(st.myYarn);if(ks.length&&!ks.includes(st.strand))st.strand=ks[0];if(typeof sel!=="undefined"){ensureNeedleOpt(r);sel.value=String(r)}}}
+  saveDraft();
+  $("handTag").textContent=`${handInfo().label} 기준 · 메리야스뜨기`;renderHandSeg();
+  const C=currentGauge();
+  renderGauge(C);renderOrigInfo();renderRec();renderAnswer(C);renderMeasure();renderCount(C);renderCombo();
+  const notes=fiberNotes();$("yarnNotes").hidden=!notes.length;$("yarnNotes").innerHTML=notes.map(n=>`<span>${n}</span>`).join("");
+  $("keepMe").hidden=!myGauge();
+  if(typeof renderStepper==="function")renderStepper();
+  yState("my");st.origYarns.forEach((_,i)=>yState("o"+i));
+}
+function refreshAll(){profileSummary();update();if(!$("libView").hidden)renderLib()}
+
+/* ---------- render a whole project into the page ---------- */
+const sel=$("needle");
+OWN_N.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=mmTxt(v)+(isSpecialN(v)?" · 특수":"");sel.appendChild(o)});
+/* a pattern or yarn may name an in-between size (3.25, 6.5…): add it so the select can show it */
+function ensureNeedleOpt(v){v=+v;if(!(v>0)||[...sel.options].some(o=>+o.value===v))return;
+  const o=document.createElement("option");o.value=v;o.textContent=mmTxt(v);
+  const after=[...sel.options].find(x=>+x.value>v);sel.insertBefore(o,after||null)}
+function setMode(m){st.mode=m;$("mSwatch").setAttribute("aria-pressed",m==="swatch");$("mPiece").setAttribute("aria-pressed",m==="piece");
+  $("swatchIn").hidden=m!=="swatch";$("pieceIn").hidden=m!=="piece";update()}
+function syncMeInputs(){ME_IDS.forEach(([id,k])=>{$(id).value=st.me[k]||""});$("pcRound").checked=!!st.me.round;
+  $("mSwatch").setAttribute("aria-pressed",st.mode==="swatch");$("mPiece").setAttribute("aria-pressed",st.mode==="piece");
+  $("swatchIn").hidden=st.mode!=="swatch";$("pieceIn").hidden=st.mode!=="piece";if(myGauge())$("handBox").open=true}
+/* write a measured gauge into my yarn (combo or single) so next time it's exact */
+function keepMeasured(stateId){
+  const m=myGauge();if(!m)return;
+  const y=st.myYarn,k=y.mode==="combo"?1:st.strand,n=st.needle;
+  y.gauges=y.gauges.filter(g=>!(g.k===k&&g.n===n)&&(g.n>0||g.s>0));
+  y.gauges.push({k,n,s:Math.round(m.s*10)/10,r:m.r?Math.round(m.r*10)/10:null,me:true});
+  if(y.mode==="combo"&&!y.name.trim())y.name=comboName();
+  ME_IDS.forEach(([id,key])=>{st.me[key]=""});st.me.two=false;st.mode="swatch";syncMeInputs();
+  renderMy();update();
+  const el=$(stateId)||$("myYState");if(el)el.textContent=sameMode()?`${mmTxt(n)} ${fmt(m.s)}코를 이 프로젝트에 기록했어요.`:`${mmTxt(n)} ${fmt(m.s)}코를 기록했어요. "이 실 저장"을 누르면 실 목록에도 남아요.`;
+  if(!sameMode())$("myYState").textContent=`${mmTxt(n)} ${fmt(m.s)}코 기록 · "이 실 저장"으로 실 목록에 남겨요`;
+}
+const ME_IDS=[["myS","s"],["myR","r"],["myS2","s2"],["myR2","r2"],["pcS","pcS"],["pcW","pcW"],["pcR","pcR"],["pcL","pcL"]];
+function renderMeasure(){
+  const L=measLen(),sel5=L===5?"5":L===10?"10":"c";
+  $("mLen").value=sel5;$("mLenCL").hidden=sel5!=="c";if(sel5==="c"&&document.activeElement!==$("mLenC"))$("mLenC").value=st.me.len||"";
+  const two=filled(st.me.s2)||filled(st.me.r2)||st.me.two;
+  $("spot2").hidden=!two;$("addSpot").hidden=two;
+  const labs=document.querySelectorAll("#swatchIn .mlab,#spot2 .mlab");
+  labs[0].textContent=`${fmt(L)}cm 안의 코${two?" · 첫 번째 곳":""}`;labs[1].textContent=`${fmt(L)}cm 안의 단${two?" · 첫 번째 곳":""}`;
+  labs[2].textContent=`${fmt(L)}cm 안의 코 · 두 번째 곳`;labs[3].textContent=`${fmt(L)}cm 안의 단 · 두 번째 곳`;
+  const m=myGauge(),out=$("mConv");
+  if(!m){out.textContent=L<10?`${fmt(L)}cm로 재면 1코만 잘못 세도 10cm로는 ${fmt(10/L)}코 차이가 나요. 한 군데 더 재면 더 정확해요.`:"";return}
+  out.innerHTML=`→ 10cm 기준 <b>${fmt(m.s)}코${m.r?` × ${fmt(m.r)}단`:""}</b>으로 계산해요${m.two?" (두 곳 평균)":""}.${L<10&&!m.two?` <span class="diff">${fmt(L)}cm는 1코 차이가 10cm로 ${fmt(10/L)}코가 돼요. 한 군데 더 재면 정확해져요.</span>`:""}`;
+}
+function renderProject(){
+  $("projName").value=st.name||"";
+  renderMy();renderOrigs();
+  $("pcRound").checked=!!st.me.round;
+  ensureNeedleOpt(st.needle);sel.value=String(st.needle);
+  ME_IDS.forEach(([id,k])=>{$(id).value=st.me[k]||""});
+  [["patS","s"],["patR","r"],["patN","n"]].forEach(([id,k])=>{$(id).value=st.pattern[k]??""});
+  $("patWash").value=st.pattern.wash||"unknown";$("patUnit").value=st.pattern.unit||"cm";
+  renderExample();
+  if(myGauge())$("handBox").open=true;
+  renderSegs();renderSizes();renderWant();setMode(st.mode||"swatch");
+}
+sel.onchange=()=>{st.needle=+sel.value;st.needleSet=true;update()};
+$("ymSingle").onclick=()=>{st.myYarn.mode="single";renderMy();renderOrigs();update()};
+$("ymOrig").onclick=()=>{st.myYarn.mode="orig";renderMy();renderOrigs();update()};
+$("origGo1").onclick=()=>goStep(1);
+$("ymCombo").onclick=()=>{const y=st.myYarn;if(y.mode==="orig")y.mode="single";if(y.mode!=="combo")renderOrigs();y.mode="combo";y.parts=y.parts||[];
+  if(!y.parts.length&&(y.name.trim()||y.gauges.some(g=>g.s))){y.parts.push(fixY(Object.assign({},y,{mode:"single",parts:undefined})));y.name="";y.gauges=[]}
+  while(y.parts.length<2)y.parts.push(fixY({gauges:[{k:1}]}));renderMy();update()};
+$("addPart").onclick=()=>{st.myYarn.parts.push(fixY({gauges:[{k:1}]}));renderMy();update();$("p"+(st.myYarn.parts.length-1)+"Name")?.focus()};
+$("pcRound").onchange=e=>{st.me.round=e.target.checked;update()};
+$("keepMe").onclick=()=>keepMeasured("keepMeState");
+$("addOrig").onclick=()=>{st.origYarns.push(fixY({gauges:[{k:1}]}));renderOrigs();update();$("o"+(st.origYarns.length-1)+"Name")?.focus()};
+$("omEach").onclick=()=>{st.origMode="each";renderOrigs();update()};
+$("omTogether").onclick=()=>{st.origMode="together";renderOrigs();update()};
+$("strand").onchange=e=>{st.strand=+e.target.value;update()};
+$("addS").onclick=()=>{st.pattern.sizes.push({name:"",m:{}});renderSizes();renderWant();update();$("zn"+(st.pattern.sizes.length-1))?.focus()};
+const addCol=dir=>{const k="c"+newId();st.pattern.cols.push({key:k,name:"",dir,custom:true});renderSizes();update();$("cn"+(st.pattern.cols.length-1))?.focus()};
+$("addCs").onclick=()=>addCol("s");$("addCr").onclick=()=>addCol("r");
+[["patS","s"],["patR","r"],["patN","n"]].forEach(([id,k])=>{$(id).oninput=e=>{st.pattern[k]=num(e.target.value);
+  update()}});
+$("patWash").onchange=e=>{st.pattern.wash=e.target.value;update()};
+
+$("patUnit").onchange=e=>{const to=e.target.value,from=st.pattern.unit||"cm";if(to===from)return;
+  /* keep what's already in the table meaning the same length */
+  const f=to==="in"?1/2.54:2.54;st.pattern.sizes.forEach(z=>Object.keys(z.m).forEach(k=>{const v=num(z.m[k]);if(v!=null)z.m[k]=Math.round(v*f*10)/10}));
+  st.pattern.unit=to;renderSizes();renderWant();update()};
+$("exClear").onclick=()=>{st=normalizeProject(blankProject());savedJSON=null;lsSet("hankocha-current-saved",null);renderProject();goStep(1)};
+$("mSwatch").onclick=()=>setMode("swatch");$("mPiece").onclick=()=>setMode("piece");
+ME_IDS.forEach(([id,k])=>{$(id).oninput=e=>{st.me[k]=e.target.value;update()}});
+$("clearMe").onclick=()=>{const L=st.me.len;Object.keys(st.me).forEach(k=>st.me[k]="");st.me.len=L;ME_IDS.forEach(([id])=>$(id).value="");update()};
+$("mLen").onchange=e=>{const v=e.target.value;if(v==="c"){st.me.len=st.me.len==="5"||st.me.len==="10"?"":st.me.len;$("mLenCL").hidden=false;$("mLenC").focus()}else st.me.len=v;update()};
+$("mLenC").oninput=e=>{st.me.len=e.target.value;update()};
+$("cntA").oninput=e=>{st.cnt[st.cnt.m].a=e.target.value;update()};
+$("cntB").oninput=e=>{st.cnt[st.cnt.m].b=e.target.value;update()};
+$("addSpot").onclick=()=>{st.me.two=true;update();$("myS2").focus()};
+
+
+/* ---------- backup: everything this person saved, as one JSON file ---------- */
+const BACKUP_KIND="dandi-backup";
+function makeBackup(){
+  return JSON.stringify({kind:BACKUP_KIND,version:1,savedAt:new Date().toISOString(),
+    profile:clone(profile),yarns:clone(yarnLib),projects:clone(projLib),current:clone(st)},null,1);
+}
+const isNative=()=>!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+function backupName(){const d=new Date();return`단디-백업-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.json`}
+async function exportBackup(){
+  const data=makeBackup(),msg=$("bkMsg");
+  /* 1) the Claude viewer's own save prompt */
+  try{const c=window.claude;const dl=c&&c.use?await c.use("downloads"):null;
+    if(dl){await dl.save({filename:backupName(),data});msg.textContent="백업 파일을 저장했어요. 다른 기기에서는 '백업 불러오기'로 넣으면 돼요.";return}}
+  catch(e){if(e&&e.code==="declined"){msg.textContent="저장을 취소했어요.";return}}
+  /* 2) ordinary browsers */
+  if(!isNative()){
+    try{const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download=backupName();
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+      msg.textContent="백업 파일을 내려받았어요. 안 보이면 아래 '글자로 복사'를 써주세요.";return}catch(e){}
+  }
+  /* 3) the app: copy as text */
+  await copyBackup(true);
+}
+async function copyBackup(fromExport){
+  const data=makeBackup(),msg=$("bkMsg"),ta=$("bkText");
+  ta.hidden=false;ta.value=data;
+  try{await navigator.clipboard.writeText(data);
+    msg.textContent=(fromExport?"이 앱에서는 파일 대신 ":"")+"백업 내용을 복사했어요. 메모나 카톡 '나와의 채팅'에 붙여넣어 보관하세요.";}
+  catch(e){ta.focus();ta.select();msg.textContent="아래 글자를 전체 선택해서 복사해 보관하세요.";}
+}
+let pendingImport=null;
+function readBackup(text){
+  let d;try{d=JSON.parse(text)}catch(e){return{err:"백업 내용을 읽을 수 없어요. 단디에서 만든 백업 파일인지 확인해주세요."}}
+  if(!d||d.kind!==BACKUP_KIND)return{err:"단디 백업이 아니에요."};
+  return{d};
+}
+function showImportPreview(d){
+  pendingImport=d;
+  const b=d.profile&&d.profile.body||{},nf=d.profile&&d.profile.fits?Object.keys(d.profile.fits).length:0;
+  const when2=d.savedAt?new Date(d.savedAt).toLocaleString("ko-KR",{dateStyle:"medium",timeStyle:"short"}):"";
+  $("bkPreview").hidden=false;
+  $("bkPreview").innerHTML=`<b>${esc(when2)} 백업</b>
+    <span>프로젝트 ${(d.projects||[]).length}개 · 실 ${(d.yarns||[]).length}개 · 저장된 핏 ${nf}개${b.chest?` · 가슴 ${fmt(b.chest)}cm`:""}</span>
+    <span class="diff">같은 프로젝트와 실은 백업 내용으로 바뀌고, 지금 있는 다른 것들은 그대로 남아요. 내 치수와 핏은 백업 내용으로 바뀌어요.</span>
+    <div class="yfoot"><button type="button" class="primary" id="bkApply">불러오기</button><button type="button" id="bkCancel">취소</button></div>`;
+  $("bkApply").onclick=applyImport;
+  $("bkCancel").onclick=()=>{pendingImport=null;$("bkPreview").hidden=true;$("bkMsg").textContent=""};
+}
+async function applyImport(){
+  const d=pendingImport;if(!d)return;pendingImport=null;
+  if(d.profile){profile=normalizeProfile(d.profile)}
+  (d.yarns||[]).forEach(y=>{if(!y||!y.name)return;const i=yarnLib.findIndex(x=>x.id===y.id||yKey(x)===yKey(y));
+    const rec=Object.assign({},y,{id:i>=0?yarnLib[i].id:(y.id||newId())});if(i>=0)yarnLib[i]=rec;else yarnLib.push(rec)});
+  (d.projects||[]).forEach(p=>{if(!p||!p.id)return;const i=projLib.findIndex(x=>x.id===p.id);if(i>=0)projLib[i]=p;else projLib.push(p)});
+  lsSet("hankocha-yarns",yarnLib);lsSet("hankocha-projects",projLib);
+  $("bkPreview").hidden=true;$("bkMsg").textContent="불러오는 중…";
+  await commitProfile();
+  for(const y of yarnLib)await putYarn(y);
+  for(const p of projLib)await putProject(p);
+  if(d.current&&!projLib.some(p=>p.id===st.id)&&!isDirty()){st=normalizeProject(d.current);savedJSON=null;renderProject()}
+  refreshAll();renderMy();renderOrigs();
+  $("bkMsg").textContent=`불러왔어요 · 프로젝트 ${(d.projects||[]).length}개, 실 ${(d.yarns||[]).length}개`;
+}
+function renderBackup(){
+  const box=$("libBackup");if(!box)return;
+  box.innerHTML=`<div class="bkcard">
+    <div class="bkhead"><h3>백업</h3><span class="diff">${storeLabel==="내 계정에 저장돼요"?"내 계정에도 저장돼 있지만, 파일로 한 번 더 보관할 수 있어요.":"지금은 이 기기에만 저장돼요. 기기를 바꾸거나 앱을 지우기 전에 백업해두세요."}</span></div>
+    <div class="bkbtns"><button type="button" class="primary" id="bkExport">백업 파일 만들기</button><button type="button" id="bkImportBtn">백업 불러오기</button></div>
+    <div class="bkmore"><button type="button" class="link" id="bkCopy">글자로 복사</button><button type="button" class="link" id="bkPasteBtn">글자로 붙여넣기</button></div>
+    <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    <textarea id="bkText" rows="5" hidden aria-label="백업 내용" placeholder="복사해둔 백업 내용을 여기에 붙여넣어 주세요"></textarea>
+    <button type="button" id="bkPasteGo" hidden>붙여넣은 내용 확인</button>
+    <div class="info" id="bkPreview" hidden></div>
+    <p class="hint" id="bkMsg" role="status"></p>
+  </div>`;
+  $("bkExport").onclick=exportBackup;
+  $("bkCopy").onclick=()=>copyBackup(false);
+  $("bkImportBtn").onclick=()=>$("bkFile").click();
+  $("bkFile").onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const r=new FileReader();
+    r.onload=()=>{const x=readBackup(String(r.result));if(x.err){$("bkMsg").textContent=x.err;return}showImportPreview(x.d)};r.readAsText(f);e.target.value=""};
+  $("bkPasteBtn").onclick=()=>{const ta=$("bkText");ta.hidden=false;ta.value="";$("bkPasteGo").hidden=false;ta.focus();$("bkMsg").textContent=""};
+  $("bkPasteGo").onclick=()=>{const x=readBackup($("bkText").value.trim());if(x.err){$("bkMsg").textContent=x.err;return}
+    $("bkPasteGo").hidden=true;$("bkText").hidden=true;showImportPreview(x.d)};
+}
+
+/* ---------- yarn sharing with a friend: only yarns, never my body, fits or projects ---------- */
+const YARN_KIND="dandi-yarns";
+/* what a yarn looks like to someone else: seller info only, my own measured rows stay with me */
+function shareRecord(y){const r=yarnRecord(fixY(clone(y)));r.gauges=r.gauges.filter(g=>!g.me);if(r.parts)r.parts.forEach(q=>q.gauges=q.gauges.filter(g=>!g.me));return r}
+async function saveOrCopy(filename,data,msg,ta,what){
+  try{const c=window.claude;const dl=c&&c.use?await c.use("downloads"):null;
+    if(dl){await dl.save({filename,data});msg.textContent=`${what} 파일을 저장했어요.`;return true}}
+  catch(e){if(e&&e.code==="declined"){msg.textContent="저장을 취소했어요.";return false}}
+  if(!isNative()){
+    try{const url=URL.createObjectURL(new Blob([data],{type:"application/json"}));const a=document.createElement("a");a.href=url;a.download=filename;
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+      msg.textContent=`${what} 파일을 내려받았어요. 카톡으로 보내면 돼요.`;return true}catch(e){}
+  }
+  ta.hidden=false;ta.value=data;
+  try{await navigator.clipboard.writeText(data);msg.textContent=`${what} 내용을 복사했어요. 카톡에 붙여넣어 보내면 돼요.`}
+  catch(e){ta.focus();ta.select();msg.textContent="아래 글자를 전체 선택해서 복사하세요."}
+  return true;
+}
+const shDlg=()=>$("shareDlg");
+function openShDlg(){const d=shDlg();d.showModal?d.showModal():d.setAttribute("open","");}
+function closeShDlg(){const d=shDlg();d.close?d.close():d.removeAttribute("open")}
+$("shCancel").onclick=closeShDlg;
+function dayStamp(){const d=new Date();return`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`}
+
+function openYarnSend(){
+  const list=yarnLib.slice().sort((a,b)=>yLabel(a).localeCompare(yLabel(b),"ko"));
+  const on=new Set(list.map(y=>y.id));
+  $("shT").textContent="실 보내기";$("shSub").textContent="보낼 실을 골라주세요. 내가 직접 잰 기록은 빼고 판매처 정보만 보내요.";$("shMsg").textContent="";
+  const body=$("shBody");
+  body.innerHTML=`<label class="chk"><input type="checkbox" id="shAll" checked> 전부 고르기</label>
+    <div>${list.map(y=>`<label class="shrow"><input type="checkbox" data-id="${y.id}" checked><span class="shm"><span class="shn">${esc(yLabel(y))}</span><span class="shs">${(y.gauges||[]).filter(g=>!g.me&&g.s>0).length}개 게이지${per100(y)?` · 100g당 ${fmt(per100(y),0)}m`:""}${y.parts?" · 합사":""}</span></span></label>`).join("")}</div>
+    <textarea id="shText" rows="5" hidden aria-label="보낼 내용"></textarea>`;
+  const go=$("shGo");
+  const sync=()=>{go.textContent=`${on.size}개 보내기`;go.disabled=!on.size;$("shAll").checked=on.size===list.length};
+  body.querySelectorAll("input[data-id]").forEach(c=>c.onchange=()=>{c.checked?on.add(c.dataset.id):on.delete(c.dataset.id);sync()});
+  $("shAll").onchange=e=>{body.querySelectorAll("input[data-id]").forEach(c=>{c.checked=e.target.checked;e.target.checked?on.add(c.dataset.id):on.delete(c.dataset.id)});sync()};
+  go.onclick=async()=>{
+    const ys=list.filter(y=>on.has(y.id)).map(shareRecord);
+    const data=JSON.stringify({kind:YARN_KIND,version:1,savedAt:new Date().toISOString(),yarns:ys},null,1);
+    await saveOrCopy(`단디-실-${ys.length}개-${dayStamp()}.json`,data,$("shMsg"),$("shText"),`실 ${ys.length}개`);
+  };
+  sync();openShDlg();
+}
+
+let incoming=[];
+function readYarnShare(text){
+  let d;try{d=JSON.parse(text)}catch(e){return{err:"내용을 읽을 수 없어요. 단디에서 보낸 실 파일인지 확인해주세요."}}
+  if(!d||(d.kind!==YARN_KIND&&d.kind!==BACKUP_KIND)||!Array.isArray(d.yarns))return{err:"단디에서 보낸 실 파일이 아니에요."};
+  const ys=d.yarns.filter(y=>y&&String(y.name||"").trim()).map(shareRecord);
+  if(!ys.length)return{err:"받을 실이 없어요."};
+  return{ys};
+}
+/* new, same (overwrite), already identical, or a similar name I should look at */
+function classifyYarn(inc){
+  const k=yKey(inc),ex=k?yarnLib.find(x=>yKey(x)===k):null;
+  if(ex){const same=JSON.stringify(shareRecord(ex))===JSON.stringify(Object.assign(shareRecord(ex),inc,{brand:ex.brand||"",name:ex.name}));
+    return{kind:same?"dup":"same",target:ex,on:!same}}
+  const nk=normKey(inc.name);
+  const sim=yarnLib.find(x=>{const kx=yKey(x),nx=normKey(x.name);return(nx&&nx===nk)||(k.length>=4&&kx.length>=4&&(kx.includes(k)||k.includes(kx)))});
+  if(sim)return{kind:"sim",target:sim,on:false,act:"merge"};
+  return{kind:"new",on:true};
+}
+function openYarnRecv(){
+  $("shT").textContent="실 받기";$("shSub").textContent="친구가 보낸 실 파일을 고르거나, 받은 글자를 붙여넣어 주세요.";$("shMsg").textContent="";
+  $("shBody").innerHTML=`<div class="bkbtns"><button type="button" class="primary" id="shPick">파일 고르기</button><button type="button" id="shPasteBtn">글자로 붙여넣기</button></div>
+    <input type="file" id="shFile" accept=".json,application/json,text/plain" hidden>
+    <textarea id="shPaste" rows="6" hidden aria-label="받은 내용" placeholder="받은 내용을 여기에 붙여넣어 주세요"></textarea>`;
+  const go=$("shGo");go.textContent="확인";go.disabled=true;go.onclick=()=>take($("shPaste").value.trim());
+  const take=text=>{const r=readYarnShare(text);if(r.err){$("shMsg").textContent=r.err;return}showIncoming(r.ys)};
+  $("shPick").onclick=()=>$("shFile").click();
+  $("shFile").onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>take(String(rd.result));rd.readAsText(f);e.target.value=""};
+  $("shPasteBtn").onclick=()=>{const ta=$("shPaste");ta.hidden=false;ta.focus();go.disabled=false};
+  openShDlg();
+}
+function showIncoming(ys){
+  incoming=ys.map(y=>Object.assign({y},classifyYarn(y)));
+  const ST={new:["새 실","new"],same:["같은 실 · 받은 정보로 바꾸고 내가 잰 기록은 그대로","same"],dup:["이미 똑같이 있어요","dup"],sim:["비슷한 실이 있어요","sim"]};
+  $("shSub").textContent=`친구가 보낸 실 ${ys.length}개예요. 받을 실만 체크하세요.`;
+  $("shBody").innerHTML=incoming.map((r,i)=>`<label class="shrow"><input type="checkbox" data-i="${i}" ${r.on?"checked":""}>
+    <span class="shm"><span class="shn">${esc(yLabel(r.y))}</span><span class="shs ${ST[r.kind][1]}">${ST[r.kind][0]}</span>
+    ${r.kind==="sim"?`<span class="shs">내 "${esc(yLabel(r.target))}"와 <select data-act="${i}" aria-label="어떻게 받을지"><option value="merge">합치기</option><option value="new">따로 추가</option></select></span>`:""}</span></label>`).join("")
+    +`<p class="hint">친구가 직접 잰 기록은 가져오지 않아요. 손땀이 달라서요.</p>`;
+  const go=$("shGo");
+  const sync=()=>{const n=incoming.filter(r=>r.on).length;go.textContent=n?`${n}개 받기`:"받을 실을 골라주세요";go.disabled=!n};
+  $("shBody").querySelectorAll("input[data-i]").forEach(c=>c.onchange=()=>{incoming[+c.dataset.i].on=c.checked;sync()});
+  $("shBody").querySelectorAll("select[data-act]").forEach(sl=>{sl.onchange=()=>{incoming[+sl.dataset.act].act=sl.value}});
+  go.onclick=applyIncoming;sync();$("shMsg").textContent="";
+}
+async function applyIncoming(){
+  const pick=incoming.filter(r=>r.on),changed=[];let nNew=0,nUp=0;
+  pick.forEach(r=>{
+    const inc=r.y;
+    if(r.target&&(r.kind==="same"||r.kind==="dup"||(r.kind==="sim"&&r.act!=="new"))){
+      const l=r.target;
+      /* friend's seller rows replace mine at the same needle; my other rows and my measured rows stay */
+      const keep=(l.gauges||[]).filter(g=>g.me||!inc.gauges.some(x=>x.k===g.k&&x.n===g.n));
+      const has=v=>v!=null&&v!=="";
+      ["weight","length","needleMin","needleMax"].forEach(k=>{if(has(inc[k]))l[k]=inc[k]});
+      if((inc.fibers||[]).length)l.fibers=inc.fibers;
+      if(inc.parts)l.parts=inc.parts;
+      l.brand=l.brand||inc.brand||"";l.gauges=[...inc.gauges,...keep].sort((a,b)=>a.k-b.k||a.n-b.n);l.updatedAt=Date.now();
+      changed.push(l);nUp++;
+    }else{const l=Object.assign({id:newId(),updatedAt:Date.now()},inc);yarnLib.push(l);changed.push(l);nNew++}
+  });
+  lsSet("hankocha-yarns",yarnLib);
+  $("shGo").disabled=true;$("shMsg").textContent="넣는 중…";
+  for(const l of changed)await putYarn(l);
+  closeShDlg();renderMy();renderOrigs();if(!$("libView").hidden)renderLib();
+  const m=$("libShareMsg");if(m)m.textContent=`실을 받았어요 · 새로 ${nNew}개${nUp?`, 덮어쓰기 ${nUp}개`:""}`;
+}
+
+/* ---------- free vs premium: only inside the Android app (the web page stays as it is) ----------
+   AD_UNIT_ID: 단디 하단 배너 광고 단위 ID.
+   PREMIUM_ID: Play Console › 수익 창출 › 인앱 상품에서 만든 상품 ID와 같아야 해요. */
+const AD_UNIT_ID="ca-app-pub-2486517051650098/1430722388";
+const PREMIUM_ID="dandi_premium";
+const FREE_LIMIT=10;
+const plug=n=>(window.Capacitor&&window.Capacitor.Plugins||{})[n];
+let premium=lsGet("dandi-premium")===true,priceText="₩1,000",bannerOn=false,productReady=false;
+/* the 10-project limit and the premium button only exist once the Play product is live.
+   Until then the app is "ads only": no limit, no purchase button. */
+const limited=()=>isNative()&&productReady&&!premium;
+const atLimit=()=>limited()&&projLib.length>=FREE_LIMIT;
+function setAdSpace(h){h=+h||0;if(h>130)h=h/(window.devicePixelRatio||1);document.documentElement.style.setProperty("--adh",Math.round(h)+"px")}
+async function showAds(){
+  const A=plug("AdMob");if(!isNative()||premium||!A||bannerOn)return;
+  try{
+    await A.initialize({});
+    try{const ci=await A.requestConsentInfo();if(ci&&ci.isConsentFormAvailable&&ci.status==="REQUIRED")await A.showConsentForm()}catch(e){}
+    A.addListener("bannerAdSizeChanged",i=>setAdSpace(i&&i.height));
+    A.addListener("bannerAdFailedToLoad",()=>setAdSpace(0));
+    if(premium)return;
+    await A.showBanner({adId:AD_UNIT_ID,adSize:"ADAPTIVE_BANNER",position:"BOTTOM_CENTER",margin:0});bannerOn=true;
+  }catch(e){setAdSpace(0)}
+}
+async function hideAds(){setAdSpace(0);bannerOn=false;try{const A=plug("AdMob");if(A)await A.removeBanner()}catch(e){}}
+function setPremium(v){premium=!!v;lsSet("dandi-premium",premium);if(premium)hideAds();renderPremium();renderProjState()}
+const owns=t=>t&&t.productIdentifier===PREMIUM_ID&&(t.purchaseState==null||String(t.purchaseState)==="1");
+async function checkPremium(){
+  /* renders again when the store answers */
+  const P=plug("NativePurchases");if(!isNative()||!P)return;
+  try{const r=await P.getProduct({productIdentifier:PREMIUM_ID,productType:"inapp"});if(r&&r.product&&r.product.priceString){priceText=r.product.priceString;productReady=true}}catch(e){productReady=false}
+  try{const r=await P.getPurchases({productType:"inapp"});setPremium((r&&r.purchases||[]).some(owns))}catch(e){}
+  renderPremium();renderProjState();if(!$("libView").hidden)renderLib();
+}
+async function buyPremium(msg){
+  const P=plug("NativePurchases");if(!P){msg("앱에서만 살 수 있어요.");return}
+  try{msg("결제 창을 여는 중…");
+    const t=await P.purchaseProduct({productIdentifier:PREMIUM_ID,productType:"inapp",quantity:1});
+    if(owns(t)){setPremium(true);msg("고마워요! 프리미엄이 켜졌어요.");setTimeout(closePrem,1200)}
+    else msg("결제가 아직 처리 중이에요. 끝나면 앱을 다시 열 때 자동으로 켜져요.");
+  }catch(e){const m=String(e&&(e.message||e.code)||e);
+    if(/already|owned|ITEM_ALREADY/i.test(m)){await restorePremium(msg)}
+    else msg(/cancel/i.test(m)?"결제를 취소했어요.":"결제를 마치지 못했어요. 잠시 후 다시 해주세요.")}
+}
+async function restorePremium(msg){
+  const P=plug("NativePurchases");if(!P){msg("앱에서만 복원할 수 있어요.");return}
+  msg("확인하는 중…");try{await P.restorePurchases()}catch(e){}
+  await checkPremium();msg(premium?"구매를 복원했어요. 프로젝트 무제한, 광고 없음이에요.":"이 구글 계정으로 산 기록이 없어요.");
+}
+function openPrem(){
+  $("pmPrice").textContent=priceText;$("pmBuy").textContent=`프리미엄 ${priceText}`;$("pmMsg").textContent="";
+  const d=$("premDlg");d.showModal?d.showModal():d.setAttribute("open","");
+}
+function closePrem(){const d=$("premDlg");d.close?d.close():d.removeAttribute("open")}
+$("pmLater").onclick=closePrem;
+$("pmBuy").onclick=()=>buyPremium(t=>$("pmMsg").textContent=t);
+function renderPremium(){
+  const box=$("premCard");if(!box)return;
+  if(!isNative()||(!productReady&&!premium)){box.hidden=true;return}
+  box.hidden=false;
+  box.innerHTML=premium?`<div class="premcard on"><div class="pc"><b>단디 프리미엄 사용 중</b><span class="diff">프로젝트 무제한 · 광고 없음</span></div></div>`
+    :`<div class="premcard"><div class="pc"><b>무료 버전 · 프로젝트 ${Math.min(projLib.length,999)}/${FREE_LIMIT}</b><span class="diff">프리미엄은 한 번 결제로 프로젝트 무제한 + 광고 없음</span></div>
+      <button type="button" class="primary" id="pcBuy">프리미엄 ${esc(priceText)}</button><span class="ystate" id="pcMsg" role="status" style="flex-basis:100%"></span></div>`;
+  const b=$("pcBuy");if(b)b.onclick=()=>buyPremium(t=>$("pcMsg").textContent=t);
+}
+
+/* ---------- library view: projects, yarns, measurements ---------- */
+let libTab="proj",libQ="",libSort="recent";
+function showView(v,tab){
+  $("calcView").hidden=v!=="calc";$("libView").hidden=v!=="lib";
+  $("navCalc").setAttribute("aria-pressed",v==="calc");$("navLib").setAttribute("aria-pressed",v==="lib");
+  if(v==="lib"){if(tab)libTab=tab;renderLib();if(isNative()&&!premium)checkPremium()}
+  try{window.scrollTo({top:0,behavior:"smooth"})}catch(e){}
+}
+const usedIn=y=>{const k=yKey(y);return projLib.filter(p=>(p.myYarn&&yKey(p.myYarn)===k)||(p.origYarns||[]).some(o=>yKey(o)===k)).length};
+function armTwice(btn,label,fn){let armed=false;btn.onclick=()=>{if(!armed){armed=true;const old=btn.textContent;btn.textContent=label;btn.classList.add("danger");
+  setTimeout(()=>{armed=false;btn.textContent=old;btn.classList.remove("danger")},3000);return}fn()}}
+function sortFilter(list,nameOf){
+  const q=libQ.trim().toLowerCase();
+  return list.filter(x=>!q||nameOf(x).toLowerCase().includes(q))
+    .sort((a,b)=>libSort==="name"?nameOf(a).localeCompare(nameOf(b),"ko"):(b.updatedAt||0)-(a.updatedAt||0));
+}
+function renderLib(){
+  renderPremium();
+  chips($("libTabs"),[["proj",`프로젝트 ${projLib.length}${limited()?`/${FREE_LIMIT}`:""}`],["yarn",`실 ${yarnLib.length}`],["fit","치수·핏"]],libTab,k=>{libTab=k;renderLib()});
+  $("libSearch").closest(".libtools").hidden=libTab==="fit";
+  $("libStore").textContent=storeLabel==="내 계정에 저장돼요"?"내 계정에 저장돼 있어서 다른 기기에서도 보여요.":"지금은 이 기기에만 저장돼요.";
+  const box=$("libBody");renderBackup();
+  if(libTab==="proj")return renderProjCards(box);
+  if(libTab==="yarn")return renderYarnCards(box);
+  renderFitView(box);
+}
+function renderProjCards(box){
+  const list=sortFilter(projLib,p=>p.name||"");
+  if(!projLib.length){box.innerHTML=`<div class="empty big">아직 저장한 프로젝트가 없어요.<br>계산하기에서 "저장"을 누르면 여기에 모여요.</div>`;return}
+  if(!list.length){box.innerHTML=`<div class="empty">"${esc(libQ)}"와 맞는 프로젝트가 없어요.</div>`;return}
+  box.innerHTML=`<div class="cards">${list.map(p=>{
+    const y=p.myYarn||{},yn=y.mode==="orig"?"원작실 그대로":yLabel(y)||(y.parts||[]).map(x=>yLabel(x)).filter(Boolean).join(" + ");
+    const cur=p.id===st.id;
+    return`<article class="card${cur?" cur":""}" data-id="${p.id}">
+      <div class="meta"><span class="tagc acc">${garment(p.garment).name}</span><span class="tagc">${fName(p.fit||"regular")}</span>${p.want?`<span class="tagc">${esc(p.want)} 사이즈</span>`:""}${cur?`<span class="tagc now">열려 있음</span>`:""}</div>
+      <h3>${esc(p.name||"이름 없는 프로젝트")}</h3>
+      <dl class="kv"><dt>내 실</dt><dd>${yn?esc(yn):"—"}${y.mode==="combo"?" (합사)":""}</dd><dt>바늘</dt><dd>${p.needle?mmTxt(p.needle):"—"}</dd>${p.pattern&&p.pattern.s?`<dt>도안</dt><dd>${fmt(p.pattern.s)}코${p.pattern.r?` × ${fmt(p.pattern.r)}단`:""}</dd>`:""}</dl>
+      ${p.summary?`<p class="summ">${esc(p.summary)}</p>`:""}
+      <span class="when">${when(p.updatedAt)}</span>
+      <div class="cact"><button type="button" class="primary" data-a="open">${cur?"계속하기":"열기"}</button><button type="button" data-a="dup">복제</button><button type="button" data-a="del">삭제</button></div>
+    </article>`}).join("")}</div>`;
+  box.querySelectorAll(".card").forEach(c=>{
+    const p=projLib.find(x=>x.id===c.dataset.id);
+    const open=c.querySelector('[data-a="open"]');
+    if(p.id!==st.id&&isDirty())armTwice(open,"변경 버리고 열기",()=>{loadProject(p);showView("calc");goStep(firstOpen())});
+    else open.onclick=()=>{if(p.id!==st.id){loadProject(p);showView("calc");goStep(firstOpen())}else showView("calc")};
+    c.querySelector('[data-a="dup"]').onclick=async()=>{if(atLimit()){openPrem();return}const q=clone(p);q.id=newId();q.name=(p.name||"프로젝트")+" 복사";q.updatedAt=Date.now();projLib.unshift(q);renderLib();await putProject(q)};
+    armTwice(c.querySelector('[data-a="del"]'),"정말 삭제",async()=>{projLib=projLib.filter(x=>x.id!==p.id);renderLib();await dropProject(p.id);
+      if(p.id===st.id){savedJSON=null;lsSet("hankocha-current-saved",null);renderProjState()}});
+  });
+}
+function fiberBar(y){
+  const fs=(y.fibers||[]).filter(f=>f.f&&f.p>0);if(!fs.length)return"";
+  const tot=fs.reduce((a,f)=>a+f.p,0);
+  return`<div class="fbar" aria-hidden="true">${fs.map((f,i)=>`<span style="width:${f.p/tot*100}%;background:var(--fb${i%5})"></span>`).join("")}</div>
+    <p class="flegend">${fs.map((f,i)=>`<i style="background:var(--fb${i%5})"></i>${esc(f.f)} ${fmt(f.p,0)}%`).join(" ")}</p>`;
+}
+function renderYarnCards(box){
+  const list=sortFilter(yarnLib,y=>yLabel(y));
+  const bar=`<div class="sharebar"><button type="button" id="ysSend"${yarnLib.length?"":" disabled"}>실 보내기</button><button type="button" id="ysRecv">실 받기</button><span class="ystate" id="libShareMsg" role="status"></span></div>`;
+  const bindBar=()=>{$("ysSend").onclick=openYarnSend;$("ysRecv").onclick=openYarnRecv};
+  if(!yarnLib.length){box.innerHTML=bar+`<div class="empty big">아직 저장한 실이 없어요.<br>계산하기의 실 칸에서 "이 실 저장"을 누르거나, 친구에게 "실 받기"로 받아보세요.</div>`;bindBar();return}
+  if(!list.length){box.innerHTML=bar+`<div class="empty">"${esc(libQ)}"와 맞는 실이 없어요.</div>`;bindBar();return}
+  box.innerHTML=bar+`<div class="cards">${list.map(y=>{
+    const p1=per100(y),gs=(y.gauges||[]).slice().sort((a,b)=>a.k-b.k||a.n-b.n),n=usedIn(y);
+    return`<article class="card" data-id="${y.id}">
+      <div class="meta">${y.parts?`<span class="tagc acc">합사</span>`:""}${p1?`<span class="tagc">100g당 ${fmt(p1,0)}m</span>`:""}${y.needleMin?`<span class="tagc">권장 ${fmt(y.needleMin,2)}${y.needleMax?`~${fmt(y.needleMax,2)}`:""}mm</span>`:""}</div>
+      <h3>${y.brand?`<span class="brand">${esc(y.brand)}</span>`:""}${esc(y.name)}</h3>
+      ${y.parts?`<p class="hint">${y.parts.map(x=>esc(yLabel(x))).join(" + ")}</p>`:""}
+      ${fiberBar(y)}
+      <div class="gchips">${gs.length?gs.map(g=>`<span class="gchip${g.me?" me":""}">${g.k>1?`${g.k}합 `:""}${mmTxt(g.n)} ${fmt(g.s)}코${g.r?`·${fmt(g.r)}단`:""}${g.me?" · 잰 값":""}</span>`).join(""):`<span class="hint">게이지 없음</span>`}</div>
+      <span class="when">${n?`프로젝트 ${n}개에서 사용`:"아직 쓴 프로젝트 없음"} · ${when(y.updatedAt)}</span>
+      <div class="cact"><button type="button" class="primary" data-a="my">내 실로 쓰기</button><button type="button" data-a="orig">원작실로</button><button type="button" data-a="edit">편집</button><button type="button" data-a="del">삭제</button></div>
+    </article>`}).join("")}</div>`;
+  bindBar();
+  box.querySelectorAll(".card").forEach(c=>{
+    const l=yarnLib.find(x=>x.id===c.dataset.id);
+    c.querySelector('[data-a="my"]').onclick=()=>{const y=fixY(clone(l));y.mode=l.parts?"combo":"single";st.myYarn=y;showView("calc");renderMy();update();goStep(1)};
+    c.querySelector('[data-a="orig"]').onclick=()=>{const y=fixY(clone(l));y.mode="single";delete y.parts;
+      const i=st.origYarns.findIndex(o=>!o.name.trim()&&!o.gauges.some(g=>g.s));if(i>=0)st.origYarns[i]=y;else st.origYarns.push(y);
+      showView("calc");renderOrigs();update();goStep(sameMode()?1:2)};
+    c.querySelector('[data-a="edit"]').onclick=()=>openYarnEdit(l);
+    armTwice(c.querySelector('[data-a="del"]'),"정말 삭제",async()=>{yarnLib=yarnLib.filter(x=>x.id!==l.id);renderLib();renderMy();renderOrigs();await dropYarn(l.id)});
+  });
+}
+function renderFitView(box){
+  const b=profile.body,filledBody=BODY_GROUPS.flatMap(g=>g[1]).filter(([k])=>b[k]>0);
+  const cell=(g,f)=>{const v=profile.fits[g+"_"+f];if(!v)return`<td class="nofit">—</td>`;
+    return`<td>${GCOLS[g].filter(c=>v[c]!=null).map(c=>`<span>${esc(COLS[c][0].replace("둘레","").replace(" 길이",""))} ${FIT_BASE[c]?sgn(v[c]):fmt(v[c])}</span>`).join("")}</td>`};
+  box.innerHTML=`<div class="fitwrap">
+    <section class="card"><div class="phead"><h3>내 몸 치수</h3><button type="button" id="libBodyBtn">수정</button></div>
+      ${filledBody.length?`<dl class="kv body">${filledBody.map(([k,l])=>`<dt>${l}</dt><dd>${fmt(b[k])}cm</dd>`).join("")}</dl>`:`<p class="hint">아직 비어 있어요. 가슴둘레만 넣어도 사이즈를 추천해드려요.</p>`}
+    </section>
+    <section class="card"><div class="phead"><h3>저장된 핏</h3><button type="button" id="libFits">수정</button></div>
+      <p class="hint">둘레·너비는 몸 치수에 더하는 여유(±), 길이는 완성 cm예요.</p>
+      <div class="mwrap"><table class="fittbl"><thead><tr><th></th>${FITS.map(f=>`<th>${f[1]}</th>`).join("")}</tr></thead>
+      <tbody>${GARMENTS.map(g=>`<tr><th>${g.name}</th>${FITS.map(f=>cell(g.id,f[0])).join("")}</tr>`).join("")}</tbody></table></div>
+    </section></div>`;
+  $("libBodyBtn").onclick=()=>openProfile("body");$("libFits").onclick=()=>openProfile("fit");
+}
+function openYarnEdit(l){
+  editId=l.id;editYarn=fixY(clone(l));
+  $("eNote").textContent=l.parts?`합사 구성(${l.parts.map(p=>yLabel(p)).join(" + ")})은 프로젝트에서 바꿀 수 있어요. 여기서는 이름과 합사 게이지를 고쳐요.`:"";
+  $("eMsg").textContent="";renderYarn("e");
+  const d=$("yarnDlg");d.showModal?d.showModal():d.setAttribute("open","");
+}
+$("eCancel").onclick=()=>{const d=$("yarnDlg");d.close?d.close():d.removeAttribute("open")};
+$("eSave").onclick=async()=>{
+  const l=yarnLib.find(x=>x.id===editId),name=editYarn.name.trim();
+  if(!name){$("eMsg").textContent="실 이름을 넣어주세요";return}
+  if(yarnLib.some(x=>x.id!==editId&&yKey(x)===yKey(editYarn))){$("eMsg").textContent="같은 브랜드·이름의 실이 이미 있어요";return}
+  const rec=yarnRecord(editYarn);if(l.parts&&!rec.parts)rec.parts=clone(l.parts);
+  Object.assign(l,rec,{updatedAt:Date.now()});
+  const d=$("yarnDlg");d.close?d.close():d.removeAttribute("open");
+  renderLib();renderMy();renderOrigs();await putYarn(l);
+};
+function dropYarn(id){lsSet("hankocha-yarns",yarnLib);return yarnCol?queue(()=>yarnCol.doc(id).delete()):Promise.resolve("local")}
+$("navCalc").onclick=()=>showView("calc");
+$("navLib").onclick=()=>showView("lib");
+$("libSearch").oninput=e=>{libQ=e.target.value;renderLib()};
+$("libSort").onchange=e=>{libSort=e.target.value;renderLib()};
+
+/* ---------- wizard ---------- */
+const STEPS=["내 실","도안","사이즈표","고르기","결과"];
+const YARN_ICON='<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7.5"/><path d="M4.6 8.2c3.6-.4 7.6 1.2 10.4 4.6"/><path d="M5.2 13.6c2.8-1.4 6.6-.9 9.4 1.6"/><path d="M8.6 4c1.8 2.6 2.6 6.4 1.8 10.6"/><path d="M13.6 3.9c.6 2.6.1 5.6-1.6 8.2"/><path d="M17.2 16.4c1.4 1.6 2.6 2.4 4 2.6"/></svg>';
+let wizStep=+(lsGet("hankocha-step")||1);
+function stepDone(n){
+  if(n===1)return sameMode()||currentGauge().src!=="none";
+  if(n===2)return patternGauge().s>0;
+  if(n===3)return st.pattern.sizes.some(z=>z.name&&mainOf(z)>0);
+  if(n===4)return st.pattern.sizes.some(z=>z.name===st.want&&mainOf(z)>0);
+  return false;
+}
+const firstOpen=()=>{for(let n=1;n<=4;n++)if(!stepDone(n))return n;return 5};
+const MISSING={1:"게이지를 하나 이상 넣어주세요",2:"도안 게이지 코 수를 넣어주세요",3:"사이즈별 실측을 넣어주세요",4:"입고 싶은 사이즈를 골라주세요"};
+function renderStepper(){
+  const nav=$("stepper");if(!nav)return;
+  nav.innerHTML=STEPS.map((l,i)=>{const n=i+1,cur=n===wizStep,done=n<5&&stepDone(n);
+    return`<button type="button" data-n="${n}" class="${cur?"cur":""} ${done?"done":""}" aria-current="${cur?"step":"false"}"><i>${cur?YARN_ICON:n}</i><span>${l}</span></button>`}).join("");
+  nav.querySelectorAll("button").forEach(b=>b.onclick=()=>goStep(+b.dataset.n));
+  $("wPrev").hidden=wizStep===1;
+  $("wNext").hidden=wizStep===5;
+  $("wNext").textContent=wizStep===4?"결과 보기 →":"다음 →";
+  $("wNote").textContent=wizStep<5&&!stepDone(wizStep)?MISSING[wizStep]:"";
+}
+function goStep(n){
+  wizStep=Math.max(1,Math.min(5,n));lsSet("hankocha-step",wizStep);
+  document.querySelectorAll("#calcView .step").forEach(sec=>{sec.hidden=+sec.dataset.step!==wizStep});
+  renderStepper();
+  const top=$("stepper");if(top&&top.getBoundingClientRect().top<0)try{top.scrollIntoView({behavior:"smooth",block:"start"})}catch(e){}
+}
+function goMeasure(){goStep(1);$("handBox").open=true;setTimeout(()=>{try{($("measureSub").hidden?$("handBox"):$("measureSub")).scrollIntoView({behavior:"smooth",block:"start"})}catch(e){}},50)}
+$("wPrev").onclick=()=>goStep(wizStep-1);
+$("wNext").onclick=()=>goStep(wizStep+1);
+
+renderProject();profileSummary();renderProjState();goStep(wizStep);
+connectStore();
+if(isNative()){checkPremium().finally(showAds)}
+</script>
+
+<script>
+if("serviceWorker" in navigator&&location.protocol!=="file:"){window.addEventListener("load",()=>{navigator.serviceWorker.register("sw.js").catch(()=>{})})}
+</script>
+
+<script>
+/* Android back button: close a dialog, go back a step, leave the library, then exit */
+(function(){
+  var C=window.Capacitor,A=C&&C.Plugins&&C.Plugins.App;if(!A)return;
+  A.addListener("backButton",function(){
+    var open=[].slice.call(document.querySelectorAll("dialog[open]"));
+    if(open.length){open.forEach(function(d){d.close?d.close():d.removeAttribute("open")});return}
+    var lib=document.getElementById("libView");
+    if(lib&&!lib.hidden){showView("calc");return}
+    if(typeof wizStep!=="undefined"&&wizStep>1){goStep(wizStep-1);return}
+    A.exitApp();
+  });
+})();
+</script>
+</body>
+</html>

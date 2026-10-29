@@ -1,0 +1,9 @@
+{
+	"appId": "com.nia.dandiknit",
+	"appName": "단디",
+	"webDir": "www",
+	"android": {
+		"backgroundColor": "#F2F4F6",
+		"adjustMarginsForEdgeToEdge": "auto"
+	}
+}

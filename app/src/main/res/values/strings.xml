@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">단디</string>
+    <string name="title_activity_main">단디</string>
+    <string name="package_name">com.dandi.knit</string>
+    <string name="custom_url_scheme">com.dandi.knit</string>
+    <!-- AdMob 앱 ID (단디) -->
+    <string name="admob_app_id">ca-app-pub-2486517051650098~5694447203</string>
+</resources>
