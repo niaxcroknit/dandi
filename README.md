@@ -12,7 +12,7 @@
 |---|---|
 | `/` (저장소 맨 위) | Android Studio 프로젝트. 이 폴더를 그대로 Open 하면 돼요 |
 | `app/src/main/assets/public/index.html` | 앱 화면 전체 (계산기 코드) |
-| `web/` | 웹앱(PWA) 버전. 정적 호스팅에 그대로 올리면 돼요 |
+| `docs/` | 웹앱(PWA) 버전. GitHub Pages로 https://niaxcroknit.github.io/dandi/ 에 공개돼요 |
 | `store/` | 스토어 설명, 출시 노트, 개인정보처리방침, 스크린샷 |
 
 Node.js 없이 빌드되도록 Capacitor와 플러그인(광고, 결제) 코드를 프로젝트 안에 넣어 두었어요.
@@ -40,6 +40,10 @@ Node.js 없이 빌드되도록 Capacitor와 플러그인(광고, 결제) 코드�
 - 상품을 활성화하면 앱을 다시 올리지 않아도 자동으로 켜져요. 산 기록은 앱을 켤 때와 내 보관함을 열 때 자동으로 되살려요.
 - 결제를 켜기 전에 할 일: 통신판매업 신고번호를 Play Console 계정 세부정보에 넣기, 결제 프로필 만들기, 콘텐츠 등급의 "디지털 상품 구매"를 예로 바꾸기, 개인정보처리방침에 결제 항목 추가하기.
 
+## 웹 버전
+
+GitHub 저장소 Settings › Pages에서 Source를 `Deploy from a branch`, Branch를 `main` / `/docs`로 두면 https://niaxcroknit.github.io/dandi/ 로 열려요.
+
 ## 웹 버전 고치기
 
-화면을 고칠 때는 `app/src/main/assets/public/index.html`과 `web/index.html`이 같은 내용이에요. 한쪽을 고치면 다른 쪽에도 똑같이 복사해 주세요. 웹 버전을 고친 뒤에는 `web/sw.js`의 `CACHE` 이름을 바꿔야 사용자 폰에서 새 버전으로 바뀌어요.
+화면을 고칠 때는 `app/src/main/assets/public/index.html`과 `docs/index.html`이 같은 내용이에요. 한쪽을 고치면 다른 쪽에도 똑같이 복사해 주세요. 웹 버전을 고친 뒤에는 `docs/sw.js`의 `CACHE` 이름을 바꿔야 사용자 폰에서 새 버전으로 바뀌어요.
